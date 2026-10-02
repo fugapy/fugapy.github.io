@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FUGA</title>
+<meta name="description" content="FUGA, estudio creativo y archivo urbano de Asunción. Pensamos ciudad. Hacemos cosas.">
+<meta name="theme-color" content="#FFD500">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Manrope:wght@400;600;700&display=swap">
+<style>
+html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+/* Sistema FUGA (mini manual sep 2026): papel y tinta sostienen la grilla, amarillo firma la marca madre,
+   los cuatro colores de rama quedan para códigos, barras y etiquetas chicas. Títulos Archivo ExtraBold, cuerpo Manrope. */
+:root {
+  --paper: #F4F2ED;
+  --ink: #0A0A0A;
+  --bg: var(--paper);
+  --fg: var(--ink);
+  --muted: #55524C;
+  --line: #CFCBC2;
+  --yellow: #FFD500;   /* firma marca madre */
+  --red: #FF0402;      /* CULTURAL */
+  --green: #70C83B;    /* ESPACIO */
+  --blue: #004ED8;     /* TECH */
+  --on-yellow: #0A0A0A;
+
+  --f-title: "Archivo", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --max: 78rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #0A0A0A; --fg: #F4F2ED; --muted: #A9A59D; --line: #2B2A27; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #0A0A0A; --fg: #F4F2ED; --muted: #A9A59D; --line: #2B2A27; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--f-body); font-size: 1.0625rem; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent; overflow-x: hidden;
+}
+a { color: inherit; }
+h1, h2, h3 {
+  margin: 0; font-family: var(--f-title); font-weight: 800; text-transform: uppercase;
+  letter-spacing: -.02em; line-height: .95; text-wrap: balance;
+}
+p { margin: 0; text-wrap: pretty; }
+:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+[id] { scroll-margin-top: 1.5rem; }
+
+.wrap { width: 100%; max-width: var(--max); margin-inline: auto; padding-inline: var(--gutter); }
+.label {
+  font-family: var(--f-title); font-weight: 700; font-size: .78rem; line-height: 1.35;
+  letter-spacing: .14em; text-transform: uppercase;
+}
+.sq { display: inline-block; width: .7em; height: .7em; margin-right: .5em; vertical-align: .02em; }
+.sq--red { background: var(--red); } .sq--green { background: var(--green); }
+.sq--blue { background: var(--blue); } .sq--yellow { background: var(--yellow); box-shadow: inset 0 0 0 1px currentColor; }
+.sq--ink { background: currentColor; }
+
+.skip { position: absolute; left: var(--gutter); top: -4rem; z-index: 50; background: var(--ink); color: var(--paper); padding: .6rem 1rem; text-decoration: none; }
+.skip:focus { top: calc(env(safe-area-inset-top, 0px) + .5rem); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .6rem;
+  font-family: var(--f-title); font-weight: 800; font-size: .9rem; letter-spacing: .1em; text-transform: uppercase;
+  text-decoration: none; padding: 1rem 1.5rem; min-height: 3rem; border: 2px solid currentColor; cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease, transform .15s ease;
+}
+.btn:active { transform: translateY(1px); }
+.btn-ink { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.btn-ink:hover { background: transparent; color: var(--ink); }
+.btn-solid { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.btn-solid:hover { background: transparent; color: var(--fg); }
+.btn-line { background: transparent; color: inherit; }
+.btn-line:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.btn svg { width: 1.05rem; height: 1.05rem; flex: none; }
+
+/* ---------- Portada: firma de marca madre ---------- */
+.hero { background: var(--yellow); color: var(--on-yellow); }
+.hero .wrap { padding-block: clamp(1.25rem, 3vw, 2rem) clamp(2.5rem, 6vw, 4.5rem); display: grid; gap: clamp(2rem, 5vw, 3.5rem); }
+.hero-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; flex-wrap: wrap; }
+.hero-top nav ul { display: flex; gap: 1.6rem; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; }
+.hero-top nav a { text-decoration: none; }
+.hero-top nav a:hover { text-decoration: underline; text-underline-offset: .3em; text-decoration-thickness: 2px; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: clamp(2rem, 5vw, 4rem); align-items: end; }
+@media (max-width: 820px) { .hero-grid { grid-template-columns: minmax(0, 1fr); } }
+.logo { box-sizing: content-box; width: clamp(200px, 32vw, 420px); max-width: calc(100% - 2 * clamp(36px, 5.6vw, 74px)); height: auto; display: block; padding: clamp(36px, 5.6vw, 74px); margin: calc(-1 * clamp(36px, 5.6vw, 74px)) 0 0 calc(-1 * clamp(36px, 5.6vw, 74px)); }
+.logo path { fill: var(--red); stroke: var(--red); stroke-width: 0; }
+.hero-copy { display: grid; gap: 1.5rem; min-width: 0; }
+.hero h1 { font-size: clamp(2.6rem, 6.6vw, 5.6rem); }
+.hero .lead { font-size: clamp(1.05rem, 1.5vw, 1.2rem); max-width: 34rem; font-weight: 500; }
+.ctas { display: flex; flex-wrap: wrap; gap: .9rem; }
+.hero-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 2rem; border-top: 2px solid var(--on-yellow); padding-top: .9rem; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .logo path {
+    fill: transparent; stroke-width: 2.4; stroke-dasharray: 1600; stroke-dashoffset: 1600;
+    animation: trazo 1.3s cubic-bezier(.6,.1,.3,1) .15s forwards, relleno .45s ease 1.25s forwards;
+  }
+  .logo path:nth-child(2) { animation-delay: .3s, 1.4s; }
+  .logo path:nth-child(3) { animation-delay: .45s, 1.55s; }
+  .logo path:nth-child(4) { animation-delay: .6s, 1.7s; }
+  @keyframes trazo { to { stroke-dashoffset: 0; } }
+  @keyframes relleno { to { fill: var(--red); stroke-width: 0; } }
+}
+
+/* ---------- Secciones ---------- */
+.section { padding-block: clamp(4rem, 9vw, 7.5rem); }
+.head { display: grid; gap: 1rem; margin-bottom: clamp(2rem, 5vw, 3.5rem); max-width: 48rem; }
+.head h2 { font-size: clamp(2.1rem, 5vw, 3.9rem); }
+.head p { color: var(--muted); max-width: 38rem; }
+.cabecera { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; border-bottom: 2px solid var(--fg); padding-bottom: .8rem; margin-bottom: clamp(2rem, 5vw, 3rem); }
+
+/* Cuatro fugas */
+.fugas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 2px solid var(--fg); border-left: 1px solid var(--line); }
+@media (max-width: 980px) { .fugas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .fugas { grid-template-columns: minmax(0, 1fr); } }
+.fuga { position: relative; display: grid; gap: .9rem; align-content: start; padding: 1.5rem 1.25rem 1.75rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-width: 0; }
+.fuga::before { content: ""; position: absolute; left: 0; right: 0; top: -2px; height: 6px; background: var(--c); }
+.fuga h3 { font-size: clamp(1.6rem, 2.6vw, 2.1rem); }
+.fuga p { color: var(--muted); }
+.fuga .tags { color: var(--fg); }
+.fuga--cultural { --c: var(--red); } .fuga--espacio { --c: var(--green); }
+.fuga--tech { --c: var(--blue); } .fuga--diseno { --c: var(--yellow); }
+.fuga a { font-weight: 700; text-underline-offset: .25em; }
+
+/* Frase de archivo */
+.frase { border-top: 2px solid var(--fg); border-bottom: 2px solid var(--fg); padding-block: clamp(2.5rem, 6vw, 4rem); display: grid; gap: 1.25rem; }
+.frase h2 { font-size: clamp(2.6rem, 8.5vw, 7.5rem); line-height: .9; }
+.frase-pie { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .75rem 2rem; align-items: baseline; }
+.frase-pie p { color: var(--muted); max-width: 34rem; }
+
+/* Servicios */
+.grupo { display: grid; grid-template-columns: minmax(0, 14rem) minmax(0, 1fr); gap: 1rem 2.5rem; padding-block: 1.75rem; border-top: 2px solid var(--fg); }
+.grupo:last-of-type { border-bottom: 2px solid var(--fg); }
+@media (max-width: 760px) { .grupo { grid-template-columns: minmax(0, 1fr); } }
+.grupo ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem 2rem; }
+@media (max-width: 760px) { .grupo ul { grid-template-columns: minmax(0, 1fr); } }
+.grupo li { display: grid; gap: .3rem; min-width: 0; }
+.grupo h3 { font-size: 1.15rem; letter-spacing: -.01em; line-height: 1.1; }
+.grupo li p { color: var(--muted); }
+.after { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center; margin-top: 2rem; }
+.after p { color: var(--muted); }
+
+/* Bloque invertido (TECH y contacto): tinta sobre papel se invierte */
+.invert { background: var(--fg); color: var(--bg); }
+.invert .muted { color: color-mix(in srgb, var(--bg) 72%, var(--fg)); }
+.tech .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(2rem, 5vw, 4rem); align-items: center; padding-block: clamp(4rem, 9vw, 7rem); }
+@media (max-width: 860px) { .tech .wrap { grid-template-columns: minmax(0, 1fr); } }
+.tech-copy { display: grid; gap: 1.3rem; min-width: 0; }
+.tech h2 { font-size: clamp(2.2rem, 5vw, 4rem); }
+.tech .btn-line:hover { background: var(--bg); color: var(--fg); border-color: var(--bg); }
+.consola { border: 2px solid currentColor; font-family: ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace; font-size: .85rem; line-height: 1.75; min-width: 0; }
+.consola-bar { display: flex; justify-content: space-between; gap: 1rem; padding: .6rem .9rem; border-bottom: 2px solid currentColor; }
+.consola-bar .sq { margin-right: .45em; }
+.consola pre { margin: 0; padding: .9rem .9rem 1.2rem; font: inherit; white-space: pre-wrap; word-break: break-word; min-height: 12.5em; }
+.consola .sel { background: var(--blue); color: #FFFFFF; padding-inline: .2em; }
+.consola .nota { padding: .6rem .9rem; border-top: 2px solid currentColor; }
+.cursor { display: inline-block; width: .55em; height: 1.05em; background: var(--blue); vertical-align: -.18em; animation: parpadeo 1s steps(1) infinite; }
+@keyframes parpadeo { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .cursor { animation: none; } }
+
+/* Proceso */
+.pasos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 2px solid var(--fg); }
+@media (max-width: 860px) { .pasos { grid-template-columns: minmax(0, 1fr); } }
+.paso { display: grid; gap: .5rem; align-content: start; padding: 1.4rem 1.25rem 1.6rem 0; min-width: 0; border-bottom: 1px solid var(--line); }
+@media (min-width: 861px) { .paso + .paso { padding-left: 1.25rem; border-left: 1px solid var(--line); } }
+.paso .num { font-family: var(--f-title); font-weight: 800; font-size: 2.6rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.paso h3 { font-size: 1.25rem; }
+.paso p { color: var(--muted); }
+.condiciones { display: flex; flex-wrap: wrap; gap: .6rem 2rem; margin-top: 1.5rem; color: var(--muted); }
+
+/* Preguntas */
+.faq { display: grid; max-width: 50rem; border-top: 2px solid var(--fg); }
+.faq details { border-bottom: 1px solid var(--line); }
+.faq summary {
+  list-style: none; cursor: pointer; display: flex; justify-content: space-between; gap: 1rem; align-items: baseline;
+  padding-block: 1.15rem; font-family: var(--f-title); font-weight: 700; font-size: 1.15rem; line-height: 1.25;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font-weight: 800; transition: transform .15s ease; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { color: var(--muted); padding-bottom: 1.25rem; max-width: 42rem; }
+
+/* Contacto */
+.contacto .wrap { display: grid; gap: 1.75rem; padding-block: clamp(4.5rem, 10vw, 8rem); }
+.contacto h2 { font-size: clamp(3.2rem, 11vw, 9rem); line-height: .86; }
+.contacto .lead { max-width: 32rem; font-size: 1.15rem; }
+.numero { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; border-top: 2px solid currentColor; border-bottom: 2px solid currentColor; padding-block: 1rem; }
+.numero output { font-family: var(--f-title); font-weight: 800; font-size: clamp(1.4rem, 3.6vw, 2.2rem); letter-spacing: .01em; margin-right: auto; user-select: all; -webkit-user-select: all; font-variant-numeric: tabular-nums; }
+.contacto .btn-line:hover { background: var(--bg); color: var(--fg); border-color: var(--bg); }
+.btn-yellow { background: var(--yellow); color: var(--ink); border-color: var(--yellow); }
+.btn-yellow:hover { background: var(--bg); color: var(--fg); border-color: var(--bg); }
+.contacto-links { display: flex; flex-wrap: wrap; gap: .5rem 2rem; }
+.contacto-links a { text-underline-offset: .25em; }
+.copiado { min-height: 1.3em; }
+
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 2rem; padding-block: 1.25rem 1.75rem; border-top: 1px solid currentColor; }
+footer { background: var(--fg); color: var(--bg); }
+
+/* Movimiento ligado al scroll, solo donde existe */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .fuga::before { transform-origin: left center; animation: barra linear both; animation-timeline: view(); animation-range: entry 20% cover 40%; }
+    @keyframes barra { from { transform: scaleX(.15); } to { transform: scaleX(1); } }
+  }
+}
+</style>
+<!-- Metricool -->
+<script>function loadScript(a){var b=document.getElementsByTagName("head")[0],c=document.createElement("script");c.type="text/javascript",c.src="https://tracker.metricool.com/resources/be.js",c.onreadystatechange=a,c.onload=a,b.appendChild(c)}loadScript(function(){beTracker.t({hash:"297fc79aa0368515f846dc2a5093c358"})});</script>
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-top">
+      <span class="label"><span class="sq sq--ink"></span>Estudio creativo + archivo urbano</span>
+      <nav aria-label="Secciones">
+        <ul class="label">
+          <li><a href="#fugas">Fugas</a></li>
+          <li><a href="#servicios">Servicios</a></li>
+          <li><a href="#proceso">Proceso</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="hero-grid">
+      <svg class="logo" viewBox="198 326 683 478" role="img" aria-label="FUGA">
+        <path fill-rule="evenodd" d="M202.75 394.50 L202.50 524.25 L203.75 525.50 L228.75 537.75 L230.75 538.00 L331.75 487.75 L333.25 487.75 L434.50 538.00 L435.75 538.00 L461.00 525.75 L462.75 524.25 L462.75 395.50 L462.25 394.25 L430.00 378.00 L429.25 378.00 L426.00 376.00 L425.25 376.00 L333.75 330.00 L331.75 329.75 Z M232.25 489.50 L233.75 489.00 L236.50 490.75 L237.25 490.75 L238.50 491.75 L239.25 491.75 L240.50 492.75 L241.25 492.75 L242.50 493.75 L243.25 493.75 L244.50 494.75 L275.50 510.00 L276.00 511.00 L275.50 511.75 L234.75 532.00 L232.75 532.50 L232.25 532.00 Z M327.25 485.25 L325.50 486.75 L284.75 507.00 L284.00 507.00 L283.25 506.25 L283.25 487.75 L283.75 486.50 L304.50 475.75 L307.00 474.75 Z M235.50 459.25 L253.25 450.75 L254.50 449.75 L256.50 449.50 L300.50 471.75 L301.25 471.75 L301.75 472.50 L300.50 473.75 L281.25 483.00 L236.75 460.75 Z M232.25 455.25 L232.25 438.25 L232.75 437.75 L233.75 437.75 L250.50 446.25 L249.25 447.75 L233.75 455.75 Z M433.00 438.25 L433.00 532.25 L432.50 532.75 L337.75 485.50 L338.25 484.75 L431.50 437.75 L432.25 437.50 Z M458.50 399.75 L458.75 521.25 L458.00 522.75 L437.75 532.75 L437.00 532.50 L437.00 431.50 L436.50 431.00 L335.50 481.50 L334.75 481.00 L334.75 461.25 L456.75 399.75 Z M209.75 395.25 L332.75 333.75 L449.75 392.75 L454.50 394.75 L455.00 395.75 L454.25 396.50 L333.25 457.00 L331.75 457.00 L211.00 396.75 Z"/>
+        <path fill-rule="evenodd" d="M607.75 329.75 L478.75 394.25 L478.50 524.50 L607.00 588.75 L609.00 589.00 L738.00 524.50 L738.25 395.50 L737.50 394.00 L609.00 329.75 Z M581.00 476.50 L581.00 544.25 L580.25 545.00 L532.00 521.00 L531.25 521.00 L512.25 511.50 L511.25 510.50 L511.50 510.00 L580.00 475.75 Z M733.75 399.50 L734.25 400.50 L734.00 522.00 L733.25 522.75 L611.50 583.50 L610.50 583.50 L610.25 461.25 L611.25 460.25 L732.25 399.75 Z M610.25 429.75 L610.50 361.25 L611.50 361.25 L679.75 395.25 L678.00 397.00 L619.50 426.00 L618.25 427.00 L617.50 427.00 L616.25 428.00 L615.50 428.00 L614.25 429.00 L613.50 429.00 L612.25 430.00 L610.75 430.25 Z M606.00 361.25 L606.25 432.25 L604.00 434.00 L581.00 445.50 L580.75 470.75 L579.00 472.00 L518.50 502.00 L517.25 503.00 L508.25 507.00 L507.75 506.50 L508.00 410.00 L511.50 407.75 L512.25 407.75 L513.50 406.75 L514.25 406.75 L515.50 405.75 L516.25 405.75 L605.50 361.00 Z M485.50 395.25 L508.50 383.75 L509.25 383.75 L510.50 382.75 L511.25 382.75 L512.50 381.75 L513.25 381.75 L514.50 380.75 L608.50 333.75 L690.25 374.75 L691.50 375.75 L692.25 375.75 L693.50 376.75 L694.25 376.75 L695.50 377.75 L696.25 377.75 L697.50 378.75 L698.25 378.75 L699.50 379.75 L700.25 379.75 L701.50 380.75 L729.50 394.75 L730.25 394.75 L730.75 395.50 L729.50 396.75 L609.00 457.00 L607.50 457.00 L588.75 447.50 L588.00 446.25 L688.00 396.50 L689.00 395.25 L608.50 355.00 L506.75 406.00 L505.25 406.00 L486.75 396.75 Z"/>
+        <path fill-rule="evenodd" d="M471.00 540.00 L342.00 605.00 L342.00 734.75 L342.50 735.50 L472.00 799.75 L601.25 735.25 L601.75 734.25 L601.75 605.50 L600.50 604.25 L527.50 568.00 L526.25 567.00 L525.50 567.00 L524.25 566.00 L523.50 566.00 L522.25 565.00 L521.50 565.00 L520.25 564.00 L519.50 564.00 L518.25 563.00 L517.50 563.00 L516.25 562.00 L515.50 562.00 L514.25 561.00 L513.50 561.00 L512.25 560.00 L511.50 560.00 L510.25 559.00 L509.50 559.00 L472.50 540.00 Z M374.75 721.25 L376.00 720.00 L394.00 710.75 L395.75 710.75 L443.25 734.50 L444.25 735.50 L444.25 754.50 L443.75 755.25 L441.75 754.75 L382.25 725.00 L381.50 725.00 Z M568.50 669.75 L568.00 670.75 L471.75 718.75 L401.50 683.75 L400.25 682.50 L400.75 681.75 L405.75 679.75 L420.00 672.50 L421.00 672.50 L471.75 697.75 L547.50 659.75 L549.00 659.75 L553.25 661.75 L554.50 662.75 L568.00 669.00 Z M371.75 648.25 L373.75 648.75 L414.50 669.00 L415.00 669.75 L414.50 670.75 L393.00 681.50 L393.00 706.50 L392.00 707.50 L372.50 717.25 L371.25 716.25 L371.25 648.75 Z M572.00 648.50 L572.00 665.75 L571.50 666.50 L553.75 657.50 L555.00 656.00 L571.00 648.00 Z M597.50 610.00 L597.50 732.25 L596.75 733.00 L474.25 794.00 L473.75 793.50 L473.75 722.50 L474.50 721.75 L575.75 671.50 L576.00 642.00 L575.00 641.75 L475.50 691.25 L474.75 692.00 L473.75 691.50 L473.75 671.50 L474.50 670.75 L596.25 610.00 Z M349.00 606.50 L350.25 605.00 L471.00 544.50 L473.00 544.75 L521.50 569.50 L589.00 603.00 L594.25 606.25 L593.50 607.00 L471.75 667.75 Z"/>
+        <path fill-rule="evenodd" d="M746.50 540.00 L618.50 604.25 L617.50 605.25 L617.50 734.75 L618.50 735.75 L645.25 748.75 L695.00 723.75 L697.50 723.75 L718.00 734.00 L720.00 735.50 L720.00 786.00 L747.50 799.75 L876.75 735.25 L877.25 734.25 L877.25 605.50 L876.00 604.25 L748.00 540.00 Z M646.75 699.50 L647.75 699.00 L689.50 720.00 L690.75 721.50 L647.25 743.00 L646.75 742.50 Z M650.50 669.75 L651.50 668.75 L652.25 668.75 L669.75 659.75 L671.25 659.75 L684.75 666.75 L718.00 682.75 L720.00 684.50 L720.00 704.25 L719.00 704.75 L665.50 678.00 L664.25 677.00 L651.50 671.00 Z M646.75 648.50 L647.75 648.00 L654.75 651.75 L655.50 651.75 L664.00 656.00 L665.25 657.50 L647.25 666.50 L646.75 665.50 Z M872.50 609.75 L873.25 610.50 L873.00 732.50 L750.75 793.75 L749.75 793.75 L749.25 793.25 L749.50 671.50 L750.25 670.75 Z M624.50 606.25 L625.75 605.00 L746.00 544.75 L747.75 544.50 L868.50 605.00 L869.75 606.50 L747.25 667.75 L632.75 610.75 L630.00 609.00 L624.75 606.75 Z"/>
+      </svg>
+      <div class="hero-copy">
+        <h1>Pensamos ciudad. Hacemos cosas.</h1>
+        <p class="lead">FUGA es un estudio creativo y un archivo urbano de Asunción. Hacemos planos y proyectos, automatizamos trabajo de CAD, diseñamos marcas y registramos la ciudad.</p>
+        <div class="ctas">
+          <a class="btn btn-ink" href="https://wa.me/595971857198?text=Hola%2C%20vi%20la%20web%20de%20FUGA.%20Les%20cuento%20lo%20que%20necesito%3A%20" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.5-.6 1.8-1.2.2-.6.2-1.1.1-1.2l-.5-.2Z"/></svg>
+            Hagamos algo
+          </a>
+          <a class="btn btn-line" href="#fugas">Ver las cuatro fugas</a>
+        </div>
+      </div>
+    </div>
+    <div class="hero-foot label">
+      <span>Cultural · Espacio · Tech · Diseño</span>
+      <span translate="no">Asunción · @fuga.py</span>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="section" id="fugas" aria-labelledby="fugas-titulo">
+    <div class="wrap">
+      <div class="cabecera label"><span>Una marca madre</span><span>Cuatro ramas</span></div>
+      <div class="head">
+        <h2 id="fugas-titulo">Una FUGA. Cuatro maneras de actuar.</h2>
+        <p>Las cuatro ramas comparten logo, grilla, tipografía y voz. El nombre y el color indican el territorio.</p>
+      </div>
+      <div class="fugas">
+        <article class="fuga fuga--cultural">
+          <span class="label"><span class="sq sq--red"></span>FUGA / Cultural</span>
+          <h3>Cultural</h3>
+          <p>Ciudad, archivo, revista, fotografía y cultura visual.</p>
+          <p class="label tags">Archivo / ciudad / fotografía / revista</p>
+        </article>
+        <article class="fuga fuga--espacio">
+          <span class="label"><span class="sq sq--green"></span>FUGA / Espacio</span>
+          <h3>Espacio</h3>
+          <p>Arquitectura, refacción, proyecto, documentación y obra.</p>
+          <p class="label tags">Proyecto / arquitectura / obra / territorio</p>
+        </article>
+        <article class="fuga fuga--tech">
+          <span class="label"><span class="sq sq--blue"></span>FUGA / Tech</span>
+          <h3>Tech</h3>
+          <p>CAD, automatización, infraestructura y procesos.</p>
+          <p class="label tags">Código / CAD / automatización / infraestructura</p>
+        </article>
+        <article class="fuga fuga--diseno">
+          <span class="label"><span class="sq sq--yellow"></span>FUGA / Diseño</span>
+          <h3>Diseño</h3>
+          <p>Branding, gráfico, editorial, packaging y comunicación.</p>
+          <p class="label tags">Branding / editorial / gráfico / objetos</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="frase-titulo" style="padding-top:0">
+    <div class="wrap">
+      <div class="frase">
+        <span class="label"><span class="sq sq--red"></span>Cultural · Archivo 001 · Sajonia</span>
+        <h2 id="frase-titulo">La ciudad también se lee.</h2>
+        <div class="frase-pie">
+          <p>Hay barrios donde todo parece querer combinar. Sajonia no. Casas distintas, épocas distintas y formas distintas de habitar la ciudad.</p>
+          <a class="label" href="https://www.instagram.com/fuga.py/p/Ddm16hVieO5/" target="_blank" rel="noopener">Leer “La gracia de no combinar” →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="servicios" aria-labelledby="servicios-titulo" style="padding-top:0">
+    <div class="wrap">
+      <div class="head">
+        <span class="label">Servicios</span>
+        <h2 id="servicios-titulo">Qué podés pedirnos.</h2>
+      </div>
+
+      <div class="grupo">
+        <span class="label"><span class="sq sq--green"></span>FUGA / Espacio</span>
+        <ul>
+          <li><h3>Planos municipales con firma</h3><p>Documentación para aprobación municipal, con firma de profesional habilitado incluida.</p></li>
+          <li><h3>Regularización</h3><p>Planos de construcciones existentes para ponerlas en regla.</p></li>
+          <li><h3>Relevamiento, cómputo y presupuesto</h3><p>Medimos lo que hay, dibujamos el estado actual y armamos el cómputo métrico con presupuesto de obra.</p></li>
+          <li><h3>Proyecto y refacción</h3><p>Ampliaciones, segundo piso, cambio de fachada e interiores.</p></li>
+        </ul>
+      </div>
+
+      <div class="grupo">
+        <span class="label"><span class="sq sq--blue"></span>FUGA / Tech</span>
+        <ul>
+          <li><h3>Automatización de dibujo</h3><p>Cotas, láminas y planillas que se arman solas, con resultado editable en AutoCAD.</p></li>
+          <li><h3>Digitalización CAD</h3><p>Planos en papel o PDF pasados a CAD, ordenados por capas.</p></li>
+          <li><h3>Planos de infraestructura</h3><p>Recorridos de redes de fibra óptica y documentación técnica de gran volumen.</p></li>
+          <li><h3>Procesos a medida</h3><p>Rutinas para las tareas que tu estudio repite todas las semanas.</p></li>
+        </ul>
+      </div>
+
+      <div class="grupo">
+        <span class="label"><span class="sq sq--yellow"></span>FUGA / Diseño</span>
+        <ul>
+          <li><h3>Branding</h3><p>Identidad, logo y sistema visual para que una marca se reconozca en todos lados.</p></li>
+          <li><h3>Editorial y gráfico</h3><p>Carruseles, piezas para redes, revistas y presentaciones.</p></li>
+          <li><h3>Packaging</h3><p>Cajas, etiquetas y la experiencia de abrir lo que vendés.</p></li>
+          <li><h3>Animación</h3><p>Reels y piezas en movimiento con el lenguaje de tu marca.</p></li>
+        </ul>
+      </div>
+
+      <div class="after">
+        <a class="btn btn-solid" href="https://wa.me/595971857198?text=Hola%2C%20vi%20los%20servicios%20de%20FUGA.%20Quiero%20consultar%20por%20" target="_blank" rel="noopener">Consultar por mi caso</a>
+        <p>Mandanos fotos, el plano o la idea que tengas.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="tech invert" aria-labelledby="tech-titulo">
+    <div class="wrap">
+      <div class="tech-copy">
+        <span class="label"><span class="sq sq--blue"></span>FUGA / Tech</span>
+        <h2 id="tech-titulo">¿Y si hacer menos te dejara crear más?</h2>
+        <p class="muted">Hacemos que ciertos procesos trabajen solos, para que puedas concentrarte en lo que mueve tu estudio: crear.</p>
+        <div class="ctas">
+          <a class="btn btn-line" href="https://wa.me/595971857198?text=Hola%2C%20vi%20FUGA%20Tech.%20Quiero%20probar%20la%20automatizaci%C3%B3n%20con%20un%20plano%20de%20mi%20estudio." target="_blank" rel="noopener">Probemos con una lámina tuya</a>
+        </div>
+      </div>
+      <div class="consola" role="img" aria-label="Línea de comandos de CAD generando la planta de la demo Casa Patio">
+        <div class="consola-bar label"><span><span class="sq sq--blue"></span>Línea de comandos</span><span>casa_patio.dwg</span></div>
+<pre id="consola-texto">Comando: FUGA_PLANTA casa_patio
+  Muros ............ listo
+  Aberturas ........ listo
+  Equipamiento ..... listo
+  Cotas ............ listo
+Comando: <span class="sel">LÁMINAS</span>
+  Resultado editable en AutoCAD</pre>
+        <p class="nota label muted">Demo Casa Patio · cada proyecto se prueba con sus propios archivos</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="proceso" aria-labelledby="proceso-titulo">
+    <div class="wrap">
+      <div class="head">
+        <span class="label">Proceso</span>
+        <h2 id="proceso-titulo">Cómo trabajamos.</h2>
+      </div>
+      <ol class="pasos">
+        <li class="paso"><span class="num">01</span><h3>Conversamos</h3><p>Nos mandás por WhatsApp fotos, medidas, el plano o la idea.</p></li>
+        <li class="paso"><span class="num">02</span><h3>Relevamos</h3><p>Si hace falta vamos al lugar, medimos y revisamos papeles.</p></li>
+        <li class="paso"><span class="num">03</span><h3>Presupuestamos</h3><p>Alcance, plazo y precio por escrito.</p></li>
+        <li class="paso"><span class="num">04</span><h3>Entregamos</h3><p>Trabajamos sobre lo acordado y te pasamos los archivos finales.</p></li>
+      </ol>
+      <p class="condiciones label">
+        <span>Presupuesto válido por 10 días</span>
+        <span>Seña del 50% y saldo contra entrega</span>
+        <span>Una ronda de correcciones incluida</span>
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="preguntas" aria-labelledby="preguntas-titulo" style="padding-top:0">
+    <div class="wrap">
+      <div class="head">
+        <span class="label">Preguntas</span>
+        <h2 id="preguntas-titulo">Antes de escribirnos.</h2>
+      </div>
+      <div class="faq">
+        <details><summary>¿Necesito tener planos para empezar?</summary><p>No. Si no tenés planos, hacemos el relevamiento y dibujamos el estado actual.</p></details>
+        <details><summary>¿La firma para la municipalidad está incluida?</summary><p>Sí. En la documentación municipal va incluida la firma de profesional habilitado.</p></details>
+        <details><summary>¿Cuánto cuesta?</summary><p>Depende del alcance y del tamaño. Con fotos y medidas te pasamos un presupuesto por escrito.</p></details>
+        <details><summary>¿Las imágenes son fotos reales?</summary><p>Cada imagen dice si es obra construida, proyecto en proceso o ejercicio conceptual. Lo generado o retocado con IA nunca se presenta como foto de obra.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="contacto invert" id="contacto" aria-labelledby="contacto-titulo">
+    <div class="wrap">
+      <span class="label"><span class="sq sq--yellow"></span>Contacto</span>
+      <h2 id="contacto-titulo">Hagamos algo.</h2>
+      <p class="lead muted">Fotos, medidas, un plano viejo, una marca nueva o solo la idea. Te respondemos por WhatsApp.</p>
+      <div class="numero">
+        <output id="numero" translate="no">+595 971 857 198</output>
+        <button class="btn btn-line" type="button" id="copiar">Copiar número</button>
+        <a class="btn btn-yellow" href="https://wa.me/595971857198?text=Hola%2C%20vi%20la%20web%20de%20FUGA.%20Les%20cuento%20lo%20que%20necesito%3A%20" target="_blank" rel="noopener">Abrir WhatsApp</a>
+      </div>
+      <p class="label copiado" id="copiado" aria-live="polite"></p>
+      <div class="contacto-links label">
+        <a href="https://www.instagram.com/fuga.py/" target="_blank" rel="noopener" translate="no">Instagram @fuga.py</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap label">
+    <span>Pensamos ciudad. Hacemos cosas.</span>
+    <span translate="no">@fuga.py · Asunción · <span id="anio">2026</span></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  // Consola: escribe como en la línea de comandos cuando aparece
+  var consola = document.getElementById('consola-texto');
+  function typeConsole(pre) {
+    var html = pre.innerHTML, tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    var plain = tmp.textContent, i = 0;
+    var cur = document.createElement('span'); cur.className = 'cursor';
+    pre.textContent = '';
+    (function tick() {
+      i += 2;
+      pre.textContent = plain.slice(0, i); pre.appendChild(cur);
+      if (i < plain.length) setTimeout(tick, 20);
+      else { pre.innerHTML = html; pre.appendChild(cur); }
+    })();
+  }
+  if (consola && 'IntersectionObserver' in window && !reduce.matches) {
+    var io = new IntersectionObserver(function (es) {
+      if (es[0].isIntersecting) { io.disconnect(); typeConsole(consola); }
+    }, { threshold: 0.6 });
+    io.observe(consola);
+  }
+
+  // Copiar número
+  var btn = document.getElementById('copiar'), out = document.getElementById('numero'), msg = document.getElementById('copiado');
+  if (btn && out) btn.addEventListener('click', function () {
+    var txt = out.textContent.trim();
+    function fallback() {
+      var r = document.createRange(); r.selectNodeContents(out);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      msg.textContent = 'Número seleccionado. Copialo con tu teclado.';
+    }
+    try { navigator.clipboard.writeText(txt).then(function () { msg.textContent = 'Número copiado.'; }, fallback); }
+    catch (e) { fallback(); }
+  });
+
+  var y = document.getElementById('anio'); if (y) y.textContent = new Date().getFullYear();
+})();
+</script>
+</body>
+</html>
