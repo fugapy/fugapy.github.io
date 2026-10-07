@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FUGA Tech · Automatización de dibujo CAD</title>
+<meta name="description" content="FUGA Tech convierte relevamientos y planillas en planos DWG editables. Automatización de dibujo CAD para redes, láminas y legajos, hecha en Asunción.">
+<meta name="theme-color" content="#0A0A0A">
+<link rel="canonical" href="https://fugapy.com/tech/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.png" sizes="96x96" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="FUGA Tech">
+<meta property="og:title" content="FUGA Tech · Automatización de dibujo CAD">
+<meta property="og:description" content="Lo repetitivo no se dibuja. Se genera. De un relevamiento a un plano DWG editable.">
+<meta property="og:url" content="https://fugapy.com/tech/">
+<meta property="og:image" content="https://fugapy.com/og-tech.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_PY">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "FUGA Tech",
+  "url": "https://fugapy.com/tech/",
+  "logo": "https://fugapy.com/apple-touch-icon.png",
+  "description": "FUGA Tech builds automation for CAD drafting: routines that turn field survey data into editable DWG drawings.",
+  "foundingDate": "2025-03",
+  "email": "alex@fugapy.com",
+  "telephone": "+595971857198",
+  "address": { "@type": "PostalAddress", "addressLocality": "Asunción", "addressCountry": "PY" },
+  "founder": { "@type": "Person", "name": "Alexander Romero", "jobTitle": "Founder" },
+  "parentOrganization": { "@type": "Organization", "name": "FUGA", "url": "https://fugapy.com/" },
+  "sameAs": ["https://www.instagram.com/fuga.py/"]
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Manrope:wght@400;600;700&display=swap">
+<style>
+html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+/* Pieza TECH de una sola columna con cabecera de pieza FUGA. Tinta de base, azul como único color dominante
+   (modelo CAD y bloques de afirmación), logo en su bloque amarillo original. El plano que se dibuja es la única animación. */
+:root {
+  --ink: #0A0A0A;
+  --paper: #F4F2ED;
+  --blue: #004ED8;      /* TECH: color dominante de la pieza */
+  --yellow: #FFD500;    /* solo fondo original del logo */
+  --red: #FF0402;       /* solo logo */
+  --mute: #BDBAB3;
+  --line: #3A3936;
+
+  --f-title: "Archivo", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace;
+
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --max: 76rem;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { background: var(--ink); color: var(--paper); font-family: var(--f-body); font-size: 1.0625rem; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+a { color: inherit; text-underline-offset: .25em; }
+h1, h2, h3 { margin: 0; font-family: var(--f-title); font-weight: 800; text-transform: uppercase; letter-spacing: -.025em; line-height: .95; text-wrap: balance; }
+p, ul, ol, dl, dd, figure { margin: 0; }
+p { text-wrap: pretty; }
+:focus-visible { outline: 2px solid var(--yellow); outline-offset: 3px; }
+::selection { background: var(--yellow); color: var(--ink); }
+[id] { scroll-margin-top: 5rem; }
+
+.wrap { width: 100%; max-width: var(--max); margin-inline: auto; padding-inline: var(--gutter); }
+.label { font-family: var(--f-title); font-weight: 700; font-size: .78rem; line-height: 1.35; letter-spacing: .14em; text-transform: uppercase; }
+.sq { display: inline-block; width: .7em; height: .7em; margin-right: .5em; vertical-align: .02em; background: var(--blue); outline: 1px solid rgba(244, 242, 237, .5); outline-offset: -1px; }
+.mute { color: var(--mute); }
+.skip { position: absolute; left: var(--gutter); top: -4rem; z-index: 50; background: var(--paper); color: var(--ink); padding: .6rem 1rem; text-decoration: none; }
+.skip:focus { top: calc(env(safe-area-inset-top, 0px) + .5rem); }
+
+/* Cabecera de pieza */
+.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.logo { display: block; background: var(--yellow); width: clamp(160px, 17vw, 220px); padding: clamp(22px, 2.3vw, 30px); line-height: 0; flex: none; }
+.logo svg { width: 100%; height: auto; display: block; }
+.logo path { fill: var(--red); }
+.tag { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .4rem 1.5rem; padding: clamp(1.1rem, 2.4vw, 1.75rem) var(--gutter) 0 0; }
+.tag span + span { color: var(--mute); }
+
+/* Selector de vista */
+.vistas { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--ink); border-bottom: 1px solid var(--line); margin-top: clamp(1.25rem, 3vw, 2rem); }
+.vistas .wrap { display: flex; gap: 0; }
+.vistas button { font: inherit; color: var(--mute); background: transparent; border: 0; border-bottom: 4px solid transparent; padding: 1rem 0 .8rem; margin-right: 2rem; cursor: pointer; min-height: 3rem; }
+.vistas button[aria-selected="true"] { color: var(--paper); border-bottom-color: var(--blue); }
+.vistas button:hover { color: var(--paper); }
+
+/* Secciones */
+.sec { padding-block: clamp(3.25rem, 8vw, 6.5rem); border-top: 1px solid var(--line); }
+.sec:first-child { border-top: 0; }
+.lab { display: flex; align-items: center; gap: .9em; margin-bottom: 1.25rem; }
+.lab::before { content: ""; width: clamp(28px, 3vw, 52px); height: 6px; background: var(--blue); flex: none; }
+.sec h1 { font-size: clamp(2.9rem, 9.6vw, 8.2rem); line-height: .88; letter-spacing: -.035em; }
+.sec h2 { font-size: clamp(2rem, 4.9vw, 4rem); max-width: 18ch; }
+.lead { font-size: clamp(1.1rem, 1.7vw, 1.45rem); line-height: 1.4; max-width: 38rem; margin-top: 1.5rem; }
+.intro { max-width: 40rem; margin-top: 1.25rem; color: var(--mute); }
+
+.trio { list-style: none; padding: 0; margin-top: clamp(2rem, 5vw, 3.5rem); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 2.4vw, 2.5rem); }
+@media (max-width: 760px) { .trio { grid-template-columns: minmax(0, 1fr); } }
+.trio li { border-top: 1px solid var(--line); padding-top: 1rem; display: grid; gap: .6rem; align-content: start; min-width: 0; }
+.num { justify-self: start; font-family: var(--f-title); font-weight: 800; font-size: .85rem; letter-spacing: .16em; background: var(--blue); color: var(--paper); padding: .45em .6em; line-height: 1; font-variant-numeric: tabular-nums; }
+.trio h3, .pasos h3 { font-size: clamp(1.3rem, 2vw, 1.75rem); letter-spacing: -.02em; }
+.trio p, .pasos p { color: var(--mute); }
+
+/* Demo */
+.demo-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem clamp(2rem, 5vw, 4rem); align-items: end; margin-bottom: clamp(1.5rem, 4vw, 2.5rem); }
+@media (max-width: 820px) { .demo-head { grid-template-columns: minmax(0, 1fr); } }
+.hechos { list-style: none; padding: 0; }
+.hechos li { border-top: 1px solid var(--line); padding: .6rem 0; }
+.hechos li:last-child { border-bottom: 1px solid var(--line); }
+/* Modelo CAD: el plano que se dibuja. Colores por variables para que cada pieza elija su fondo. */
+.cad { margin: 0; display: grid; min-width: 0; border: 2px solid currentColor; --cad-bg: #0A0A0A; --cad-line: #F4F2ED; --cad-dim: #A29E96; }
+.cad-bar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .3rem 1.5rem; padding: .6rem .9rem; border-bottom: 2px solid currentColor; }
+.cad-view { position: relative; aspect-ratio: 2 / 1; max-width: 100%; min-width: 0; background: var(--cad-bg); }
+@media (max-width: 640px) { .cad-view { aspect-ratio: 4 / 3; } }
+.cad-view canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.cad-computo { margin: 0; display: flex; flex-wrap: wrap; gap: .25rem 1.6rem; padding: .7rem .9rem; border-top: 2px solid currentColor; font-variant-numeric: tabular-nums; }
+.cad-computo span { transition: opacity .3s ease; }
+.cad-computo:not(.on) span { opacity: .28; }
+.cad-cmd { margin: 0; padding: .8rem .9rem; border-top: 2px solid currentColor; font: .82rem/1.7 ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace; min-height: calc(1.7em * 5 + 1.6rem); white-space: pre-wrap; word-break: break-word; }
+.cad-cursor { display: inline-block; width: .55em; height: 1.05em; background: currentColor; vertical-align: -.18em; animation: cad-parpadeo 1s steps(1) infinite; }
+@keyframes cad-parpadeo { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .cad-cursor { animation: none; } .cad-computo span { transition: none; } }
+.cad-ctl { display: flex; flex-wrap: wrap; gap: .6rem; padding: .7rem .9rem; border-top: 2px solid currentColor; }
+.cad-ctl button { font: inherit; color: inherit; background: transparent; border: 2px solid currentColor; padding: .65rem 1rem; min-height: 2.75rem; cursor: pointer; letter-spacing: .12em; }
+.cad-ctl button:hover { background: var(--cad-line); color: var(--cad-bg); border-color: var(--cad-line); }
+
+.cad { --cad-bg: #004ED8; --cad-line: #F4F2ED; --cad-dim: #B9CBF2; }
+.sello { display: inline-block; border: 1px solid var(--paper); padding: .5em .7em; }
+.nota { font-size: .92rem; color: var(--mute); max-width: 42rem; }
+.pie { display: flex; flex-wrap: wrap; gap: .8rem 1.5rem; align-items: center; margin-top: 1.25rem; }
+
+.laminas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(1rem, 2.4vw, 2rem); margin-top: clamp(1.5rem, 4vw, 2.5rem); }
+@media (max-width: 820px) { .laminas { grid-template-columns: minmax(0, 1fr); } }
+.lamina { min-width: 0; display: grid; gap: .7rem; align-content: start; }
+.lamina img { display: block; width: 100%; height: auto; aspect-ratio: 2 / 1; object-fit: contain; background: #FFFFFF; }
+.lamina figcaption { color: var(--mute); }
+
+/* Catálogo */
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: clamp(1.75rem, 4vw, 3rem); }
+@media (max-width: 960px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .cards { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--ink); padding: clamp(1.1rem, 2vw, 1.75rem); display: grid; gap: .8rem; align-content: start; min-width: 0; }
+.card .k { color: var(--mute); }
+.card h3 { font-size: clamp(1.25rem, 1.8vw, 1.6rem); letter-spacing: -.02em; }
+.card p { color: var(--mute); }
+.io { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .3rem .9rem; border-top: 1px solid var(--line); padding-top: .8rem; font-size: .95rem; }
+.io dt { color: var(--mute); }
+
+/* Filas: para quién, preguntas, datos */
+.filas { list-style: none; padding: 0; margin-top: clamp(1.75rem, 4vw, 3rem); border-top: 2px solid var(--paper); }
+.filas li { display: grid; grid-template-columns: minmax(0, 20rem) minmax(0, 1fr); gap: .4rem 2.5rem; padding-block: 1.1rem; border-bottom: 1px solid var(--line); }
+@media (max-width: 760px) { .filas li { grid-template-columns: minmax(0, 1fr); } }
+.filas h3 { font-size: 1.2rem; letter-spacing: -.01em; line-height: 1.1; }
+.filas p { color: var(--mute); }
+.simple { list-style: none; padding: 0; margin-top: clamp(1.5rem, 3.5vw, 2.5rem); border-top: 2px solid var(--paper); max-width: 52rem; }
+.simple li { padding-block: .95rem; border-bottom: 1px solid var(--line); }
+.simple li strong { font-weight: 700; }
+.simple li span { color: var(--mute); }
+
+.pasos { list-style: none; padding: 0; margin-top: clamp(1.75rem, 4vw, 3rem); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 2px solid var(--paper); }
+@media (max-width: 900px) { .pasos { grid-template-columns: minmax(0, 1fr); } }
+.pasos li { display: grid; gap: .6rem; align-content: start; padding: 1.3rem 1.25rem 1.5rem 0; border-bottom: 1px solid var(--line); min-width: 0; }
+@media (min-width: 901px) { .pasos li + li { padding-left: 1.25rem; border-left: 1px solid var(--line); } }
+
+/* Bloque azul de afirmación */
+.bloque { background: var(--blue); color: var(--paper); padding: clamp(1.5rem, 4vw, 3.25rem); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem clamp(2rem, 5vw, 4rem); align-items: start; }
+@media (max-width: 820px) { .bloque { grid-template-columns: minmax(0, 1fr); } }
+.bloque h2 { font-size: clamp(2rem, 4.6vw, 3.8rem); }
+.bloque ul { list-style: none; padding: 0; }
+.bloque li { border-top: 1px solid rgba(244, 242, 237, .45); padding: .7rem 0; }
+.bloque li:last-child { border-bottom: 1px solid rgba(244, 242, 237, .45); }
+
+/* Tabla quién hace qué */
+.tabla-wrap { overflow-x: auto; margin-top: clamp(1.5rem, 3.5vw, 2.5rem); }
+table { border-collapse: collapse; width: 100%; min-width: 34rem; }
+th, td { text-align: left; vertical-align: top; padding: .9rem 1.25rem .9rem 0; border-bottom: 1px solid var(--line); }
+thead th { border-bottom: 2px solid var(--paper); }
+td { color: var(--mute); }
+tbody th { font-weight: 700; color: var(--paper); }
+
+.aviso { background: var(--blue); color: var(--paper); }
+.aviso .wrap { padding-block: .8rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: .3rem 2rem; }
+.cita { font-family: var(--f-title); font-weight: 800; text-transform: uppercase; letter-spacing: -.02em; line-height: 1; font-size: clamp(1.5rem, 3.4vw, 2.6rem); max-width: 24ch; margin-top: clamp(1.5rem, 4vw, 2.5rem); border-left: 6px solid var(--blue); padding-left: clamp(1rem, 2vw, 1.5rem); text-wrap: balance; }
+code { font-family: var(--f-mono); font-size: .92em; border: 1px solid var(--line); padding: .05em .35em; }
+.orden { padding: 0; margin-top: 1.25rem; list-style: none; counter-reset: o; max-width: 44rem; }
+.orden li { counter-increment: o; display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); padding-block: .7rem; border-bottom: 1px solid var(--line); }
+.orden li::before { content: counter(o, decimal-leading-zero); font-family: var(--f-title); font-weight: 800; letter-spacing: .08em; color: var(--mute); font-variant-numeric: tabular-nums; }
+.sub { font-size: 1.2rem; letter-spacing: -.01em; margin-top: clamp(2rem, 4vw, 3rem); }
+
+.numero { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; border-top: 2px solid var(--paper); border-bottom: 2px solid var(--paper); padding-block: 1rem; margin-top: 1.75rem; }
+.numero output { font-family: var(--f-title); font-weight: 800; font-size: clamp(1.4rem, 3.6vw, 2.2rem); margin-right: auto; user-select: all; -webkit-user-select: all; font-variant-numeric: tabular-nums; }
+.btn { display: inline-flex; align-items: center; justify-content: center; font-family: var(--f-title); font-weight: 800; font-size: .88rem; letter-spacing: .1em; text-transform: uppercase; text-decoration: none; padding: .9rem 1.35rem; min-height: 3rem; border: 2px solid var(--paper); background: transparent; color: var(--paper); cursor: pointer; }
+.btn:hover { background: var(--paper); color: var(--ink); }
+.btn-solid { background: var(--paper); color: var(--ink); }
+.btn-solid:hover { background: transparent; color: var(--paper); }
+.fuentes { list-style: none; padding: 0; margin-top: 1.25rem; display: grid; gap: .5rem; font-size: .95rem; color: var(--mute); }
+
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 2rem; padding-block: 1.25rem 2rem; border-top: 1px solid var(--line); color: var(--mute); }
+
+/* ---- Propio de la página de producto ---- */
+.logo { text-decoration: none; }
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--ink); border-bottom: 1px solid var(--line); margin-top: clamp(1.25rem, 3vw, 2rem); }
+.nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0 1.75rem; }
+.nav a { display: block; color: var(--mute); text-decoration: none; padding: .95rem 0 .85rem; }
+.nav a:hover { color: var(--paper); }
+.nav li:first-child a { color: var(--paper); }
+.ctas { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 1.75rem; }
+.cifras { margin: clamp(2rem, 5vw, 3rem) 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 2px solid var(--paper); }
+@media (max-width: 760px) { .cifras { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.cifras div { padding: 1.1rem 1rem 1.2rem 0; border-bottom: 1px solid var(--line); display: grid; gap: .35rem; align-content: start; min-width: 0; }
+.cifras dt { order: 2; color: var(--mute); }
+.cifras dd { order: 1; font-family: var(--f-title); font-weight: 800; font-size: clamp(2.2rem, 5.2vw, 4rem); line-height: .9; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.card .estado { justify-self: start; border: 1px solid var(--paper); padding: .35em .55em; font-size: .68rem; }
+.card .estado--on { background: var(--blue); border-color: var(--blue); }
+.ficha { margin: clamp(1.75rem, 4vw, 3rem) 0 0; border-top: 2px solid var(--paper); max-width: 52rem; }
+.ficha div { display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr); gap: .2rem 2rem; padding-block: .9rem; border-bottom: 1px solid var(--line); }
+@media (max-width: 560px) { .ficha div { grid-template-columns: minmax(0, 1fr); } }
+.ficha dt { color: var(--mute); }
+.ficha dd { min-width: 0; overflow-wrap: anywhere; }
+.en { margin-top: 1.5rem; max-width: 40rem; color: var(--mute); font-size: .95rem; }
+.contacto h2 { font-size: clamp(3rem, 10vw, 8rem); line-height: .86; max-width: none; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+
+<header class="top">
+  <a class="logo" href="/" aria-label="FUGA, ir al inicio"><svg viewBox="198 326 683 478" aria-hidden="true"><path fill-rule="evenodd" d="M202.75 394.50 L202.50 524.25 L203.75 525.50 L228.75 537.75 L230.75 538.00 L331.75 487.75 L333.25 487.75 L434.50 538.00 L435.75 538.00 L461.00 525.75 L462.75 524.25 L462.75 395.50 L462.25 394.25 L430.00 378.00 L429.25 378.00 L426.00 376.00 L425.25 376.00 L333.75 330.00 L331.75 329.75 Z M232.25 489.50 L233.75 489.00 L236.50 490.75 L237.25 490.75 L238.50 491.75 L239.25 491.75 L240.50 492.75 L241.25 492.75 L242.50 493.75 L243.25 493.75 L244.50 494.75 L275.50 510.00 L276.00 511.00 L275.50 511.75 L234.75 532.00 L232.75 532.50 L232.25 532.00 Z M327.25 485.25 L325.50 486.75 L284.75 507.00 L284.00 507.00 L283.25 506.25 L283.25 487.75 L283.75 486.50 L304.50 475.75 L307.00 474.75 Z M235.50 459.25 L253.25 450.75 L254.50 449.75 L256.50 449.50 L300.50 471.75 L301.25 471.75 L301.75 472.50 L300.50 473.75 L281.25 483.00 L236.75 460.75 Z M232.25 455.25 L232.25 438.25 L232.75 437.75 L233.75 437.75 L250.50 446.25 L249.25 447.75 L233.75 455.75 Z M433.00 438.25 L433.00 532.25 L432.50 532.75 L337.75 485.50 L338.25 484.75 L431.50 437.75 L432.25 437.50 Z M458.50 399.75 L458.75 521.25 L458.00 522.75 L437.75 532.75 L437.00 532.50 L437.00 431.50 L436.50 431.00 L335.50 481.50 L334.75 481.00 L334.75 461.25 L456.75 399.75 Z M209.75 395.25 L332.75 333.75 L449.75 392.75 L454.50 394.75 L455.00 395.75 L454.25 396.50 L333.25 457.00 L331.75 457.00 L211.00 396.75 Z"/><path fill-rule="evenodd" d="M607.75 329.75 L478.75 394.25 L478.50 524.50 L607.00 588.75 L609.00 589.00 L738.00 524.50 L738.25 395.50 L737.50 394.00 L609.00 329.75 Z M581.00 476.50 L581.00 544.25 L580.25 545.00 L532.00 521.00 L531.25 521.00 L512.25 511.50 L511.25 510.50 L511.50 510.00 L580.00 475.75 Z M733.75 399.50 L734.25 400.50 L734.00 522.00 L733.25 522.75 L611.50 583.50 L610.50 583.50 L610.25 461.25 L611.25 460.25 L732.25 399.75 Z M610.25 429.75 L610.50 361.25 L611.50 361.25 L679.75 395.25 L678.00 397.00 L619.50 426.00 L618.25 427.00 L617.50 427.00 L616.25 428.00 L615.50 428.00 L614.25 429.00 L613.50 429.00 L612.25 430.00 L610.75 430.25 Z M606.00 361.25 L606.25 432.25 L604.00 434.00 L581.00 445.50 L580.75 470.75 L579.00 472.00 L518.50 502.00 L517.25 503.00 L508.25 507.00 L507.75 506.50 L508.00 410.00 L511.50 407.75 L512.25 407.75 L513.50 406.75 L514.25 406.75 L515.50 405.75 L516.25 405.75 L605.50 361.00 Z M485.50 395.25 L508.50 383.75 L509.25 383.75 L510.50 382.75 L511.25 382.75 L512.50 381.75 L513.25 381.75 L514.50 380.75 L608.50 333.75 L690.25 374.75 L691.50 375.75 L692.25 375.75 L693.50 376.75 L694.25 376.75 L695.50 377.75 L696.25 377.75 L697.50 378.75 L698.25 378.75 L699.50 379.75 L700.25 379.75 L701.50 380.75 L729.50 394.75 L730.25 394.75 L730.75 395.50 L729.50 396.75 L609.00 457.00 L607.50 457.00 L588.75 447.50 L588.00 446.25 L688.00 396.50 L689.00 395.25 L608.50 355.00 L506.75 406.00 L505.25 406.00 L486.75 396.75 Z"/><path fill-rule="evenodd" d="M471.00 540.00 L342.00 605.00 L342.00 734.75 L342.50 735.50 L472.00 799.75 L601.25 735.25 L601.75 734.25 L601.75 605.50 L600.50 604.25 L527.50 568.00 L526.25 567.00 L525.50 567.00 L524.25 566.00 L523.50 566.00 L522.25 565.00 L521.50 565.00 L520.25 564.00 L519.50 564.00 L518.25 563.00 L517.50 563.00 L516.25 562.00 L515.50 562.00 L514.25 561.00 L513.50 561.00 L512.25 560.00 L511.50 560.00 L510.25 559.00 L509.50 559.00 L472.50 540.00 Z M374.75 721.25 L376.00 720.00 L394.00 710.75 L395.75 710.75 L443.25 734.50 L444.25 735.50 L444.25 754.50 L443.75 755.25 L441.75 754.75 L382.25 725.00 L381.50 725.00 Z M568.50 669.75 L568.00 670.75 L471.75 718.75 L401.50 683.75 L400.25 682.50 L400.75 681.75 L405.75 679.75 L420.00 672.50 L421.00 672.50 L471.75 697.75 L547.50 659.75 L549.00 659.75 L553.25 661.75 L554.50 662.75 L568.00 669.00 Z M371.75 648.25 L373.75 648.75 L414.50 669.00 L415.00 669.75 L414.50 670.75 L393.00 681.50 L393.00 706.50 L392.00 707.50 L372.50 717.25 L371.25 716.25 L371.25 648.75 Z M572.00 648.50 L572.00 665.75 L571.50 666.50 L553.75 657.50 L555.00 656.00 L571.00 648.00 Z M597.50 610.00 L597.50 732.25 L596.75 733.00 L474.25 794.00 L473.75 793.50 L473.75 722.50 L474.50 721.75 L575.75 671.50 L576.00 642.00 L575.00 641.75 L475.50 691.25 L474.75 692.00 L473.75 691.50 L473.75 671.50 L474.50 670.75 L596.25 610.00 Z M349.00 606.50 L350.25 605.00 L471.00 544.50 L473.00 544.75 L521.50 569.50 L589.00 603.00 L594.25 606.25 L593.50 607.00 L471.75 667.75 Z"/><path fill-rule="evenodd" d="M746.50 540.00 L618.50 604.25 L617.50 605.25 L617.50 734.75 L618.50 735.75 L645.25 748.75 L695.00 723.75 L697.50 723.75 L718.00 734.00 L720.00 735.50 L720.00 786.00 L747.50 799.75 L876.75 735.25 L877.25 734.25 L877.25 605.50 L876.00 604.25 L748.00 540.00 Z M646.75 699.50 L647.75 699.00 L689.50 720.00 L690.75 721.50 L647.25 743.00 L646.75 742.50 Z M650.50 669.75 L651.50 668.75 L652.25 668.75 L669.75 659.75 L671.25 659.75 L684.75 666.75 L718.00 682.75 L720.00 684.50 L720.00 704.25 L719.00 704.75 L665.50 678.00 L664.25 677.00 L651.50 671.00 Z M646.75 648.50 L647.75 648.00 L654.75 651.75 L655.50 651.75 L664.00 656.00 L665.25 657.50 L647.25 666.50 L646.75 665.50 Z M872.50 609.75 L873.25 610.50 L873.00 732.50 L750.75 793.75 L749.75 793.75 L749.25 793.25 L749.50 671.50 L750.25 670.75 Z M624.50 606.25 L625.75 605.00 L746.00 544.75 L747.75 544.50 L868.50 605.00 L869.75 606.50 L747.25 667.75 L632.75 610.75 L630.00 609.00 L624.75 606.75 Z"/></svg></a>
+  <p class="tag label"><span><i class="sq"></i>Tech</span><span>Producto</span><span>Asunción</span></p>
+</header>
+
+<nav class="nav" aria-label="Secciones">
+  <div class="wrap">
+    <ul class="label">
+      <li><a href="/">← FUGA</a></li>
+      <li><a href="#demo">Demo</a></li>
+      <li><a href="#modulos">Módulos</a></li>
+      <li><a href="#empresa">Empresa</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main id="main">
+
+  <section class="sec">
+    <div class="wrap">
+      <p class="lab label">FUGA Tech · Automatización de dibujo CAD</p>
+      <h1>Lo repetitivo no se dibuja. Se genera.</h1>
+      <p class="lead">FUGA Tech es un motor de rutinas que convierte relevamientos y planillas en planos DWG editables. Nació dibujando redes de fibra óptica poste por poste. Hoy ese trabajo lo hace un comando.</p>
+      <div class="ctas">
+        <a class="btn btn-solid" href="https://wa.me/595971857198?text=Hola%2C%20vi%20FUGA%20Tech.%20Quiero%20probarlo%20con%20un%20archivo%20m%C3%ADo." target="_blank" rel="noopener">Probalo con un archivo tuyo</a>
+        <a class="btn" href="#demo">Ver la demo</a>
+      </div>
+      <ol class="trio">
+        <li><span class="num">01</span><h3>Entra un dato</h3><p>Un relevamiento en KML, una planilla o un croquis con medidas. Lo que el equipo ya tiene.</p></li>
+        <li><span class="num">02</span><h3>Corre una rutina</h3><p>Arma capas, bloques, textos, cotas y láminas, siempre con el mismo criterio.</p></li>
+        <li><span class="num">03</span><h3>Sale un DWG</h3><p>Editable, con entidades nativas. Lo revisa una persona y lo firma quien corresponde.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="produccion">
+    <div class="wrap">
+      <p class="lab label">En producción</p>
+      <h2>Ya dibujó redes de verdad.</h2>
+      <p class="intro">Antes de ser un producto fue la herramienta con la que entregamos recorridos de fibra óptica sobre postación existente.</p>
+      <dl class="cifras">
+        <div><dt class="label">Tramos entregados</dt><dd>5</dd></div>
+        <div><dt class="label">Kilómetros de recorrido</dt><dd>450+</dd></div>
+        <div><dt class="label">Postes dibujados</dt><dd>8.000+</dd></div>
+        <div><dt class="label">Láminas A1 en un tramo</dt><dd>40+</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="sec" id="demo">
+    <div class="wrap">
+      <div class="demo-head">
+        <div>
+          <p class="lab label">Demo 01 · Redes</p>
+          <h2>De un KML a un recorrido de fibra.</h2>
+        </div>
+        <ul class="hechos">
+          <li>Postes clasificados por tipo y altura, cada uno en su capa.</li>
+          <li>Los vanos son cotas de verdad, no texto suelto.</li>
+          <li>El cómputo queda escrito en el mismo dibujo.</li>
+        </ul>
+      </div>
+      <figure class="cad" id="cad">
+        <div class="cad-bar label"><span><i class="sq"></i>Modelo · tramo_ficticio.dwg</span><span>Demo · datos ficticios</span></div>
+        <div class="cad-view">
+          <canvas role="img" aria-label="Plano de un recorrido de fibra óptica ficticio de 16,1 km que se dibuja por pasos: traza, 280 postes, etiquetas y 279 cotas de vano."></canvas>
+        </div>
+        <p class="cad-computo label"><span>Longitud 16.128 m</span><span>280 postes</span><span>279 cotas de vano</span><span>12 m: 145 · 9 m: 102 · 7,5 m: 11 · Acero: 12 · A colocar: 10</span></p>
+        <pre class="cad-cmd" aria-label="Línea de comandos"></pre>
+        <div class="cad-ctl label"><button type="button" data-act="run">Correr la rutina</button><button type="button" data-act="view">Ver tramo completo</button></div>
+      </figure>
+      <p class="nota" style="margin-top:1.1rem">Los datos de la demo son ficticios. La rutina es la misma que corre sobre tramos reales.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="vivienda">
+    <div class="wrap">
+      <div class="demo-head">
+        <div>
+          <p class="lab label">Demo 02 · Vivienda</p>
+          <h2>Una planta, cinco carpetas.</h2>
+        </div>
+        <ul class="hechos">
+          <li>26 PDF y 5 DWG editables del mismo proyecto.</li>
+          <li>Anteproyecto, dos municipales, ejecutivo preliminar y carpeta bancaria.</li>
+          <li>Las luces salen de un cálculo, según medidas y uso de cada local.</li>
+          <li>Lo que falta se rotula como pendiente. No se inventa.</li>
+        </ul>
+      </div>
+      <div class="laminas">
+        <figure class="lamina">
+          <img src="/assets/casa-patio-arquitectura.png" width="2396" height="1188" loading="lazy" alt="Lámina 01 de Casa Patio: planta arquitectónica, cuadro de aberturas, corte A-A, fachada principal y planta de ubicación.">
+          <figcaption class="label">Casa Patio · lámina 01 · arquitectura</figcaption>
+        </figure>
+        <figure class="lamina">
+          <img src="/assets/casa-patio-electrica.png" width="2007" height="1188" loading="lazy" alt="Lámina eléctrica de Casa Patio: planta de instalación, esquema unifilar, cuadro de cargas y cálculo de iluminación.">
+          <figcaption class="label">Casa Patio · lámina eléctrica · unifilar y cuadro de cargas</figcaption>
+        </figure>
+      </div>
+      <div class="pie">
+        <span class="sello label">Ejercicio · lote supuesto · preliminar</span>
+        <p class="nota">No es un expediente terminado. Estructura e instalaciones las define y firma el especialista.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="modulos">
+    <div class="wrap">
+      <p class="lab label">Módulos</p>
+      <h2>Qué hace hoy.</h2>
+      <p class="intro">Cada módulo dice en qué estado está. Lo que es demo se llama demo.</p>
+      <div class="cards">
+        <article class="card">
+          <span class="estado estado--on label">En producción</span>
+          <h3>Redes: del KML al plano</h3>
+          <p>Traza, postes por tipo y altura, etiquetas que no se pisan, cotas de vano, símbolos y cómputo.</p>
+          <dl class="io"><dt class="label">Entra</dt><dd>KML, CSV o Excel.</dd><dt class="label">Sale</dt><dd>DWG con capas, bloques y cotas.</dd></dl>
+        </article>
+        <article class="card">
+          <span class="estado estado--on label">En producción</span>
+          <h3>Láminas por lote</h3>
+          <p>Rótulo, leyenda, ventanas y numeración de todas las láminas de un tramo, armadas de una vez.</p>
+          <dl class="io"><dt class="label">Entra</dt><dd>El modelo ya dibujado.</dd><dt class="label">Sale</dt><dd>Un layout por lámina, a escala.</dd></dl>
+        </article>
+        <article class="card">
+          <span class="estado label">Demo</span>
+          <h3>Legajos de vivienda</h3>
+          <p>Plantas, cortes, fachadas, instalaciones preliminares, cómputo y cronograma según a quién se presentan.</p>
+          <dl class="io"><dt class="label">Entra</dt><dd>La planta y los criterios.</dd><dt class="label">Sale</dt><dd>Carpetas en PDF y DWG.</dd></dl>
+        </article>
+        <article class="card">
+          <span class="estado label">A medida</span>
+          <h3>Una tarea repetida, un comando</h3>
+          <p>Numerar, acotar, rotular o sacar planillas del dibujo. Lo que alguien hace igual todas las semanas.</p>
+          <dl class="io"><dt class="label">Entra</dt><dd>Un DWG típico y la tarea.</dd><dt class="label">Sale</dt><dd>Rutina LISP y guía de uso.</dd></dl>
+        </article>
+        <article class="card">
+          <span class="estado label">A medida</span>
+          <h3>El estándar del equipo, cargado</h3>
+          <p>Plantilla, capas, bloques, rótulos y estilos de cota e impresión, listos desde el primer día.</p>
+          <dl class="io"><dt class="label">Entra</dt><dd>Dos o tres DWG de muestra.</dd><dt class="label">Sale</dt><dd>Plantilla y biblioteca.</dd></dl>
+        </article>
+        <article class="card">
+          <span class="estado estado--on label">Disponible</span>
+          <h3>Bloques para planos municipales</h3>
+          <p>Mobiliario, artefactos, vehículos, vegetación y aberturas, dibujados en metros.</p>
+          <dl class="io"><dt class="label">Entra</dt><dd>Nada: se inserta.</dd><dt class="label">Sale</dt><dd>47 bloques en 9 categorías.</dd></dl>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="proceso">
+    <div class="wrap">
+      <p class="lab label">Cómo se empieza</p>
+      <h2>Primero una prueba corta.</h2>
+      <ol class="pasos">
+        <li><span class="num">01</span><h3>Caso</h3><p>Nos contás qué tarea repetís y mandás un DWG de ejemplo.</p></li>
+        <li><span class="num">02</span><h3>Piloto</h3><p>Resolvemos una parte acotada sobre ese archivo y te la mostramos andando.</p></li>
+        <li><span class="num">03</span><h3>Propuesta</h3><p>Alcance, plazo y precio por escrito.</p></li>
+        <li><span class="num">04</span><h3>Entrega y soporte</h3><p>Rutina o DWG, guía de uso y una ronda de correcciones. Después seguimos disponibles.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="como">
+    <div class="wrap">
+      <div class="bloque">
+        <div>
+          <p class="label" style="margin-bottom:1rem">Cómo está hecho</p>
+          <h2>DWG nativo. Nada compilado.</h2>
+        </div>
+        <ul>
+          <li>Rutinas LISP en texto: archivos .lsp que se pueden leer y auditar.</li>
+          <li>Capas, bloques, sombreados y cotas reales. Un layout por lámina.</li>
+          <li>Desarrollado y probado en AutoCAD.</li>
+          <li>En BricsCAD, cada rutina se prueba con un archivo del cliente antes de entregarse.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="empresa">
+    <div class="wrap">
+      <p class="lab label">Empresa</p>
+      <h2>Quién está detrás.</h2>
+      <p class="lead">FUGA Tech es la rama de tecnología de FUGA, estudio de Asunción. Empezó en 2025 como la herramienta interna para dibujar redes y hoy se ofrece a contratistas, constructoras y estudios.</p>
+      <dl class="ficha">
+        <div><dt class="label">Fundador</dt><dd>Alexander Romero, proyectista y dibujante técnico CAD</dd></div>
+        <div><dt class="label">Desde</dt><dd>Marzo de 2025</dd></div>
+        <div><dt class="label">Base</dt><dd>Asunción, Paraguay. Trabajamos a distancia.</dd></div>
+        <div><dt class="label">Correo</dt><dd><a href="mailto:alex@fugapy.com" translate="no">alex@fugapy.com</a></dd></div>
+        <div><dt class="label">Parte de</dt><dd><a href="/">FUGA</a>, estudio creativo y archivo urbano · <a href="https://www.instagram.com/fuga.py/" target="_blank" rel="noopener" translate="no">@fuga.py</a></dd></div>
+      </dl>
+      <p class="en" lang="en">In English: FUGA Tech builds automation for CAD drafting. Our routines turn field survey data (KML, spreadsheets) into editable DWG drawings: fiber-optic routes with poles, labels, span dimensions and print-ready sheets. Based in Asunción, Paraguay.</p>
+    </div>
+  </section>
+
+  <section class="sec contacto" id="contacto">
+    <div class="wrap">
+      <p class="lab label">Contacto</p>
+      <h2>Hagamos algo.</h2>
+      <p class="lead">Mandanos un DWG típico y contanos qué repetís. Volvemos con una prueba sobre tu archivo.</p>
+      <div class="numero">
+        <output id="numero" translate="no">+595 971 857 198</output>
+        <button class="btn" type="button" id="copiar">Copiar número</button>
+        <a class="btn btn-solid" href="https://wa.me/595971857198?text=Hola%2C%20vi%20FUGA%20Tech.%20Quiero%20probarlo%20con%20un%20archivo%20m%C3%ADo." target="_blank" rel="noopener">Abrir WhatsApp</a>
+      </div>
+      <p class="label mute" id="copiado" aria-live="polite" style="min-height:1.4em;margin-top:.6rem"></p>
+      <p class="intro">O por correo: <a href="mailto:alex@fugapy.com" translate="no">alex@fugapy.com</a></p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap label">
+    <span>Pensamos ciudad. Hacemos cosas.</span>
+    <span translate="no">FUGA Tech · @fuga.py · Asunción · <span id="anio">2026</span></span>
+  </div>
+</footer>
+
+<script>
+// Modelo CAD: reproduce en canvas la corrida de DEMO_KML_a_DWG.lsp con sus mismos datos ficticios.
+function fugaDemo(root, D) {
+  var cv = root.querySelector('canvas'), ctx = cv.getContext('2d');
+  var view = root.querySelector('.cad-view'), cmdEl = root.querySelector('.cad-cmd');
+  var comp = root.querySelector('.cad-computo');
+  var bRun = root.querySelector('[data-act="run"]'), bView = root.querySelector('[data-act="view"]');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var W = 0, H = 0, dpr = 1, gen = 0, i;
+  var S = { route: 1, poles: 1, labels: 1, cotas: 1, z: 1 };
+  var FIN = ['Comando: DEMO3', 'DEMO 3/5 - 280 etiquetas.', 'Comando: DEMO4', 'DEMO 4/5 - 279 cotas de vano.', 'Comando: DEMO5', 'DEMO 5/5 - cómputo cargado.', 'Comando: '];
+  var lines = FIN.slice();
+  var FOCUS = 247, F0 = FOCUS - 9, F1 = FOCUS + 9;
+
+  var cum = [0];
+  for (i = 1; i < D.t.length; i++) cum.push(cum[i - 1] + Math.hypot(D.t[i][0] - D.t[i - 1][0], D.t[i][1] - D.t[i - 1][1]));
+  var total = cum[cum.length - 1];
+  var bx0 = 1e9, bx1 = -1e9, by0 = 1e9, by1 = -1e9;
+  function grow(p) { bx0 = Math.min(bx0, p[0]); bx1 = Math.max(bx1, p[0]); by0 = Math.min(by0, p[1]); by1 = Math.max(by1, p[1]); }
+  D.t.forEach(grow); D.r.forEach(function (pl) { pl.forEach(grow); });
+
+  var cs = getComputedStyle(root);
+  function col(n, d) { var v = cs.getPropertyValue(n).trim(); return v || d; }
+  var C = { bg: col('--cad-bg', '#0A0A0A'), ln: col('--cad-line', '#F4F2ED'), dm: col('--cad-dim', '#A29E96') };
+
+  function ease(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function out(t) { return 1 - Math.pow(1 - t, 3); }
+  function pad(n) { return (n < 10 ? '00' : n < 100 ? '0' : '') + n; }
+
+  function camExt() { return { cx: (bx0 + bx1) / 2, cy: (by0 + by1) / 2, ppm: Math.min(W / ((bx1 - bx0) * 1.07), H / ((by1 - by0) * 1.3)) }; }
+  function camDet() { var p = D.p[FOCUS]; return { cx: p[1], cy: p[2] + 28, ppm: Math.max(1.4, Math.min(2.6, H / 165)) }; }
+  function cam() {
+    var a = camExt(), b = camDet(), t = ease(S.z);
+    var ppm = Math.exp(Math.log(a.ppm) + (Math.log(b.ppm) - Math.log(a.ppm)) * t);
+    var k = (1 / a.ppm - 1 / ppm) / (1 / a.ppm - 1 / b.ppm);
+    return { cx: a.cx + (b.cx - a.cx) * k, cy: a.cy + (b.cy - a.cy) * k, ppm: ppm };
+  }
+  function shown(idx, v) { return v >= 1 || (v > 0 && idx >= F0 && (idx - F0) / (F1 - F0) < v); }
+
+  function draw() {
+    if (!W || !H) return;
+    var c = cam(), ppm = c.ppm, n, p, sx, sy, s, a, b, k;
+    function X(x) { return W / 2 + (x - c.cx) * ppm; }
+    function Y(y) { return H / 2 - (y - c.cy) * ppm; }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+
+    // DEMO1: recorrido
+    var lim = S.route * total;
+    ctx.strokeStyle = C.ln; ctx.lineJoin = 'round'; ctx.lineCap = 'butt';
+    if (lim > 0) {
+      ctx.lineWidth = Math.max(1.6, .8 * ppm);
+      ctx.beginPath(); ctx.moveTo(X(D.t[0][0]), Y(D.t[0][1]));
+      for (i = 1; i < D.t.length && cum[i - 1] < lim; i++) {
+        a = D.t[i - 1]; b = D.t[i]; k = Math.min(1, (lim - cum[i - 1]) / (cum[i] - cum[i - 1]));
+        ctx.lineTo(X(a[0] + (b[0] - a[0]) * k), Y(a[1] + (b[1] - a[1]) * k));
+      }
+      ctx.stroke();
+    }
+    if (S.route >= 1) {
+      ctx.lineWidth = Math.max(1, .5 * ppm);
+      D.r.forEach(function (pl) {
+        ctx.beginPath(); ctx.moveTo(X(pl[0][0]), Y(pl[0][1]));
+        for (var j = 1; j < pl.length; j++) ctx.lineTo(X(pl[j][0]), Y(pl[j][1]));
+        ctx.stroke();
+      });
+    }
+
+    // DEMO2: postes (marca a escala general, bloque en detalle)
+    n = Math.floor(S.poles * D.p.length + 1e-6);
+    if (ppm < .45) {
+      ctx.fillStyle = C.ln;
+      for (i = 0; i < n; i++) {
+        p = D.p[i]; sx = X(p[1]); sy = Y(p[2]);
+        if (i > 0 && Math.abs(D.p[i][2] - D.p[i - 1][2]) > Math.abs(D.p[i][1] - D.p[i - 1][1])) ctx.fillRect(sx - 3.5, sy - 1, 7, 2);
+        else ctx.fillRect(sx - 1, sy - 3.5, 2, 7);
+      }
+    } else {
+      s = 3 * ppm; ctx.strokeStyle = C.ln; ctx.lineWidth = Math.max(1, .1 * s);
+      for (i = 0; i < n; i++) {
+        p = D.p[i]; sx = X(p[1]);
+        if (sx < -40 || sx > W + 40) continue;
+        ctx.save(); ctx.translate(sx, Y(p[2])); ctx.rotate(-p[3] * Math.PI / 180); ctx.beginPath();
+        if (p[0] === 0) { ctx.arc(0, 0, .45 * s, 0, 6.2832); ctx.moveTo(-1.3 * s, -.35 * s); ctx.lineTo(1.3 * s, -.35 * s); ctx.moveTo(-s, .35 * s); ctx.lineTo(s, .35 * s); }
+        else if (p[0] === 1) { ctx.arc(0, 0, .4 * s, 0, 6.2832); ctx.moveTo(-1.1 * s, 0); ctx.lineTo(1.1 * s, 0); }
+        else if (p[0] === 2) { ctx.arc(0, 0, .35 * s, 0, 6.2832); ctx.moveTo(-.8 * s, 0); ctx.lineTo(.8 * s, 0); }
+        else if (p[0] === 3) { ctx.arc(0, 0, .4 * s, 0, 6.2832); ctx.moveTo(.72 * s, 0); ctx.arc(0, 0, .72 * s, 0, 6.2832); ctx.moveTo(-1.1 * s, 0); ctx.lineTo(1.1 * s, 0); }
+        else { ctx.rect(-.5 * s, -.5 * s, s, s); ctx.moveTo(-1.2 * s, 0); ctx.lineTo(1.2 * s, 0); }
+        ctx.stroke(); ctx.restore();
+      }
+    }
+    if (ppm < .9) return;
+
+    // DEMO4: cotas de vano
+    ctx.strokeStyle = C.dm; ctx.fillStyle = C.dm; ctx.lineWidth = 1;
+    ctx.font = (7.5 * ppm * .8).toFixed(1) + 'px Arial, Helvetica, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    for (i = 0; i < D.c.length; i++) {
+      if (!shown(i, S.cotas)) continue;
+      var p1 = D.p[i], p2 = D.p[i + 1], q = D.c[i], dx = p2[1] - p1[1], dy = p2[2] - p1[2], L = Math.hypot(dx, dy);
+      if (X(Math.max(p1[1], p2[1])) < -60 || X(Math.min(p1[1], p2[1])) > W + 60) continue;
+      var ux = dx / L, uy = dy / L, s1 = (p1[1] - q[0]) * ux + (p1[2] - q[1]) * uy, s2 = (p2[1] - q[0]) * ux + (p2[2] - q[1]) * uy;
+      var ax = X(q[0] + ux * s1), ay = Y(q[1] + uy * s1), bx = X(q[0] + ux * s2), by = Y(q[1] + uy * s2);
+      ctx.beginPath(); ctx.moveTo(X(p1[1]), Y(p1[2])); ctx.lineTo(ax, ay); ctx.lineTo(bx, by); ctx.lineTo(X(p2[1]), Y(p2[2])); ctx.stroke();
+      var ang = Math.atan2(by - ay, bx - ax), h = Math.min(3.5 * ppm, Math.hypot(bx - ax, by - ay) / 3);
+      [[ax, ay, 1], [bx, by, -1]].forEach(function (e) {
+        ctx.save(); ctx.translate(e[0], e[1]); ctx.rotate(ang); ctx.beginPath();
+        ctx.moveTo(0, 0); ctx.lineTo(e[2] * h, -h * .22); ctx.lineTo(e[2] * h, h * .22); ctx.closePath(); ctx.fill(); ctx.restore();
+      });
+      ctx.save(); ctx.translate((ax + bx) / 2, (ay + by) / 2); ctx.rotate(Math.abs(ang) > 1.5708 ? ang + Math.PI : ang);
+      ctx.fillText(String(Math.round(L)), 0, -.8 * ppm - 2); ctx.restore();
+    }
+
+    // DEMO3: etiquetas
+    ctx.fillStyle = C.ln; ctx.textAlign = 'left';
+    ctx.font = (5 * ppm * 1.1).toFixed(1) + 'px Arial, Helvetica, sans-serif';
+    for (i = 0; i < D.x.length; i++) {
+      if (!shown(i, S.labels)) continue;
+      var t = D.x[i]; sx = X(t[0]);
+      if (sx < -40 || sx > W + 40) continue;
+      ctx.save(); ctx.translate(sx, Y(t[1])); ctx.rotate(-t[2] * Math.PI / 180); ctx.fillText('P-' + pad(i + 1) + ' ' + t[3], 0, 0); ctx.restore();
+    }
+  }
+
+  function renderCmd() {
+    cmdEl.textContent = lines.slice(-5).join('\n');
+    var cur = document.createElement('span'); cur.className = 'cad-cursor'; cmdEl.appendChild(cur);
+  }
+  function tween(dur, fn, g) {
+    return new Promise(function (res) {
+      var t0 = performance.now();
+      (function f(now) {
+        if (g !== gen) return;
+        var t = Math.min(1, (now - t0) / dur); fn(t); draw();
+        if (t < 1) requestAnimationFrame(f); else res();
+      })(t0);
+    });
+  }
+  function type(txt, g) {
+    lines.push('Comando: '); var at = lines.length - 1;
+    return tween(txt.length * 55 + 250, function (t) { lines[at] = 'Comando: ' + txt.slice(0, Math.round(Math.min(1, t * 1.25) * txt.length)); renderCmd(); }, g);
+  }
+  function say(s) { lines.push(s); renderCmd(); }
+  function setViewBtn() { if (bView) bView.textContent = S.z > .5 ? 'Ver tramo completo' : 'Ver detalle de postes'; }
+
+  function run() {
+    var g = ++gen;
+    S = { route: 0, poles: 0, labels: 0, cotas: 0, z: 0 }; lines = []; comp.classList.remove('on'); setViewBtn(); renderCmd(); draw();
+    type('DEMO1', g)
+      .then(function () { return tween(1700, function (t) { S.route = out(t); }, g); })
+      .then(function () { say('DEMO 1/5 - recorrido: 52 vértices.'); return type('DEMO2', g); })
+      .then(function () { return tween(1500, function (t) { S.poles = t; }, g); })
+      .then(function () { say('DEMO 2/5 - 280 postes insertados.'); return type('ZOOM', g); })
+      .then(function () { return tween(1600, function (t) { S.z = t; }, g); })
+      .then(function () { setViewBtn(); return type('DEMO3', g); })
+      .then(function () { return tween(1000, function (t) { S.labels = t; }, g); })
+      .then(function () { say('DEMO 3/5 - 280 etiquetas.'); return type('DEMO4', g); })
+      .then(function () { return tween(1200, function (t) { S.cotas = t; }, g); })
+      .then(function () { say('DEMO 4/5 - 279 cotas de vano.'); return type('DEMO5', g); })
+      .then(function () { comp.classList.add('on'); say('DEMO 5/5 - cómputo cargado.'); lines.push('Comando: '); renderCmd(); });
+  }
+  function finish() { ++gen; S.route = S.poles = S.labels = S.cotas = 1; lines = FIN.slice(); comp.classList.add('on'); renderCmd(); }
+
+  if (bRun) bRun.addEventListener('click', run);
+  if (bView) bView.addEventListener('click', function () {
+    finish();
+    var g = gen, from = S.z > .5 ? 1 : 0, to = 1 - from;
+    S.z = from;
+    if (reduce) { S.z = to; setViewBtn(); draw(); return; }
+    tween(1100, function (t) { S.z = from + (to - from) * t; }, g).then(setViewBtn);
+  });
+
+  function size() {
+    var r = view.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    dpr = Math.min(2, window.devicePixelRatio || 1); W = r.width; H = r.height;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); draw();
+  }
+  if ('ResizeObserver' in window) new ResizeObserver(size).observe(view); else window.addEventListener('resize', size);
+  size(); comp.classList.add('on'); renderCmd(); setViewBtn();
+
+  if (!reduce && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { io.disconnect(); run(); } }, { threshold: .5 });
+    io.observe(view);
+  }
+}
+
+(function () {
+  var D = {"t":[[0.0,6.0],[325.0,3.1],[650.0,2.6],[975.0,0.0],[1300.0,0.8],[1625.0,2.2],[1950.0,5.6],[2275.0,6.2],[2599.9,8.5],[2924.9,11.1],[3249.9,8.2],[3574.9,9.5],[3899.9,9.5],[4224.9,9.9],[4549.9,10.3],[4874.9,11.4],[5199.9,8.4],[5524.9,10.5],[5849.9,13.8],[6174.9,13.8],[6499.9,10.7],[6539.9,10.7],[6496.3,360.7],[6493.3,710.7],[6493.2,1060.7],[6493.4,1410.7],[6493.8,1760.7],[6496.4,2110.7],[6499.1,2460.7],[6502.0,2810.7],[6503.8,3160.7],[6506.3,3510.7],[6506.3,3550.7],[6839.7,3509.4],[7173.0,3506.8],[7506.3,3504.1],[7839.6,3501.8],[8173.0,3499.8],[8506.3,3502.8],[8839.6,3502.4],[9172.9,3500.9],[9506.3,3497.8],[9839.6,3496.5],[10172.9,3497.9],[10506.2,3496.0],[10839.6,3495.7],[11172.9,3493.3],[11506.2,3496.3],[11839.5,3498.2],[12172.9,3495.3],[12506.2,3496.5],[12548.7,3496.4]],"r":[[[12548.7,3496.4],[12428.9,3616.6]],[[12448.9,3586.6],[12448.9,3646.6],[12488.9,3646.6]],[[12448.9,3619.6],[12476.9,3619.6]],[[12503.9,3646.6],[12503.9,3586.6],[12543.9,3586.6],[12543.9,3646.6]],[[12598.9,3646.6],[12558.9,3646.6],[12558.9,3586.6],[12598.9,3586.6],[12598.9,3614.8],[12578.9,3614.8]],[[12613.9,3586.6],[12613.9,3646.6],[12653.9,3646.6],[12653.9,3586.6]],[[12613.9,3614.8],[12653.9,3614.8]]],"p":[[0,0.1,17.0,359.5],[1,46.8,16.6,89.5],[1,112.8,16.0,89.5],[1,128.8,15.9,89.5],[0,175.0,15.4,359.5],[1,243.4,14.8,89.5],[0,335.5,14.0,359.9],[1,395.9,14.0,89.9],[4,434.3,13.9,359.9],[1,514.4,13.8,89.9],[0,616.8,13.6,359.9],[1,714.4,13.1,89.5],[1,821.0,12.2,89.5],[1,922.7,11.4,89.5],[0,1026.1,11.1,0.1],[1,1103.3,11.3,90.1],[0,1195.1,11.6,0.1],[0,1267.3,11.7,0.1],[0,1357.7,12.1,0.2],[0,1420.6,12.3,0.2],[0,1464.3,12.5,0.2],[0,1566.6,12.9,0.2],[2,1622.5,13.2,0.2],[0,1635.6,13.3,0.6],[0,1678.4,13.7,0.6],[1,1758.8,14.6,90.6],[0,1808.6,15.1,0.6],[1,1908.1,16.1,90.6],[4,1922.8,16.3,0.6],[0,2001.6,16.7,0.1],[0,2087.0,16.8,0.1],[0,2188.1,17.1,0.1],[1,2202.2,17.1,90.1],[0,2273.4,17.2,0.1],[0,2286.6,17.3,0.4],[0,2348.6,17.7,0.4],[0,2438.4,18.4,0.4],[1,2482.5,18.7,90.4],[0,2571.1,19.3,0.4],[1,2670.7,20.1,90.5],[1,2681.1,20.1,90.5],[0,2720.2,20.4,0.5],[1,2787.8,21.0,90.5],[0,2883.9,21.7,0.5],[0,2974.1,21.6,359.5],[0,3025.7,21.2,359.5],[2,3067.4,20.8,359.5],[3,3124.7,20.3,89.5],[3,3184.5,19.8,89.5],[1,3194.1,19.7,89.5],[0,3300.8,19.4,0.2],[1,3372.4,19.7,90.2],[1,3457.8,20.1,90.2],[1,3567.0,20.5,90.2],[0,3628.6,20.5,360.0],[1,3643.2,20.5,90.0],[0,3684.4,20.5,360.0],[1,3733.9,20.5,90.0],[4,3743.2,20.5,360.0],[1,3809.3,20.5,90.0],[0,3910.9,20.5,0.1],[1,3981.3,20.6,90.1],[1,4021.4,20.6,90.1],[1,4064.6,20.7,90.1],[0,4131.7,20.7,0.1],[1,4208.2,20.8,90.1],[0,4268.7,20.9,0.1],[0,4310.6,21.0,0.1],[0,4378.3,21.1,0.1],[0,4393.5,21.1,0.1],[0,4461.1,21.2,0.1],[0,4567.2,21.4,0.2],[2,4581.7,21.4,0.2],[0,4591.1,21.4,0.2],[0,4630.1,21.6,0.2],[1,4677.2,21.7,90.2],[0,4689.3,21.8,0.2],[1,4762.9,22.0,90.2],[4,4861.8,22.3,0.2],[0,4929.1,21.9,359.5],[0,4979.4,21.4,359.5],[0,5041.3,20.9,359.5],[1,5089.9,20.4,89.5],[0,5103.0,20.3,359.5],[0,5201.2,19.4,0.4],[0,5294.9,20.0,0.4],[0,5309.9,20.1,0.4],[1,5360.4,20.4,90.4],[0,5434.1,20.9,0.4],[1,5519.3,21.5,90.4],[1,5609.6,22.4,90.6],[0,5647.7,22.8,0.6],[1,5712.8,23.4,90.6],[0,5781.5,24.1,0.6],[0,5824.7,24.6,0.6],[0,5876.1,24.8,360.0],[2,5891.7,24.8,360.0],[3,5943.1,24.8,90.0],[3,5991.4,24.8,90.0],[1,6006.0,24.8,90.0],[0,6107.6,24.8,360.0],[1,6153.4,24.8,90.0],[1,6168.3,24.8,90.0],[1,6265.7,24.0,89.5],[0,6305.4,23.6,359.5],[1,6397.9,22.7,89.5],[0,6443.9,22.3,359.5],[1,6456.0,22.1,89.5],[4,6512.6,21.7,0.0],[1,6526.1,21.7,90.0],[0,6518.0,97.4,97.1],[1,6509.1,168.5,187.1],[1,6497.5,262.2,187.1],[1,6489.5,326.3,187.1],[0,6485.1,383.4,90.5],[1,6484.7,425.5,180.5],[0,6483.8,527.1,90.5],[0,6483.7,539.2,90.5],[0,6483.6,554.9,90.5],[0,6483.5,568.4,90.5],[0,6482.6,669.3,90.5],[0,6482.2,759.8,90.0],[2,6482.2,807.4,90.0],[0,6482.2,907.5,90.0],[0,6482.2,958.0,90.0],[1,6482.2,1004.5,180.0],[0,6482.2,1102.2,90.0],[1,6482.2,1151.9,180.0],[4,6482.2,1162.0,90.0],[0,6482.3,1204.5,90.0],[0,6482.3,1306.7,90.0],[0,6482.3,1321.6,90.0],[1,6482.3,1359.9,180.0],[0,6482.4,1371.0,90.0],[0,6482.4,1466.1,89.9],[0,6482.5,1511.9,89.9],[0,6482.6,1558.8,89.9],[1,6482.6,1627.9,179.9],[0,6482.7,1641.0,89.9],[1,6482.7,1710.1,179.9],[1,6483.2,1816.2,179.6],[0,6483.6,1865.3,89.6],[1,6484.2,1955.4,179.6],[0,6485.0,2058.8,89.6],[0,6485.6,2144.0,89.6],[0,6485.7,2156.1,89.6],[2,6485.8,2167.1,89.6],[3,6485.9,2178.4,179.6],[3,6486.0,2189.4,179.6],[1,6486.8,2291.8,179.6],[0,6487.4,2375.8,89.6],[1,6487.6,2391.7,179.6],[1,6488.2,2474.8,179.5],[1,6488.3,2488.9,179.5],[0,6488.4,2500.0,89.5],[1,6488.9,2551.8,179.5],[0,6489.0,2566.8,89.5],[1,6489.6,2638.5,179.5],[4,6489.9,2684.1,89.5],[1,6490.1,2698.1,179.5],[0,6490.9,2797.6,89.5],[1,6491.3,2875.3,179.7],[1,6491.6,2932.8,179.7],[1,6491.9,2978.1,179.7],[0,6492.3,3066.4,89.7],[1,6492.4,3077.9,179.7],[0,6492.8,3144.6,89.7],[0,6493.0,3184.4,89.6],[0,6493.3,3231.5,89.6],[0,6493.6,3271.7,89.6],[0,6493.7,3281.3,89.6],[0,6494.3,3369.4,89.6],[2,6495.0,3458.1,89.6],[0,6495.3,3525.3,90.0],[0,6523.0,3559.7,352.9],[1,6533.9,3558.3,82.9],[0,6574.0,3553.4,352.9],[1,6661.0,3542.6,82.9],[4,6700.3,3537.7,352.9],[0,6745.7,3532.1,352.9],[0,6810.3,3524.1,352.9],[0,6894.4,3520.0,359.6],[1,6939.9,3519.6,89.6],[0,6987.8,3519.3,359.6],[0,7051.2,3518.8,359.6],[0,7102.8,3518.4,359.6],[0,7117.1,3518.3,359.6],[1,7172.1,3517.8,89.6],[0,7184.5,3517.7,359.5],[1,7274.2,3517.0,89.5],[1,7372.7,3516.2,89.5],[0,7449.3,3515.6,359.5],[1,7495.6,3515.2,89.5],[0,7601.1,3514.4,359.6],[0,7639.3,3514.2,359.6],[0,7741.2,3513.4,359.6],[2,7782.1,3513.2,359.6],[3,7828.9,3512.8,89.6],[3,7938.2,3512.2,89.7],[1,8020.8,3511.7,89.7],[0,8086.0,3511.3,359.7],[1,8099.7,3511.2,89.7],[1,8207.9,3511.1,90.5],[1,8313.6,3512.1,90.5],[0,8325.6,3512.2,0.5],[1,8408.8,3512.9,90.5],[0,8505.1,3513.8,0.5],[1,8554.7,3513.7,89.9],[4,8652.4,3513.6,359.9],[1,8696.7,3513.6,89.9],[0,8709.6,3513.6,359.9],[1,8795.0,3513.5,89.9],[1,8879.2,3513.3,89.7],[1,8926.9,3513.0,89.7],[0,8938.1,3513.0,359.7],[1,8980.6,3512.8,89.7],[0,8996.5,3512.7,359.7],[0,9009.6,3512.6,359.7],[0,9020.8,3512.6,359.7],[0,9129.2,3512.1,359.7],[0,9224.8,3511.4,359.5],[0,9276.5,3510.9,359.5],[2,9322.8,3510.5,359.5],[0,9383.5,3509.9,359.5],[0,9432.8,3509.4,359.5],[1,9487.9,3508.9,89.5],[0,9500.0,3508.8,359.5],[1,9606.1,3508.4,89.8],[4,9673.7,3508.1,359.8],[0,9773.8,3507.8,359.8],[0,9841.8,3507.5,0.2],[0,9936.9,3507.9,0.2],[1,9980.0,3508.1,90.2],[0,10082.3,3508.5,0.2],[0,10168.2,3508.8,0.2],[0,10209.9,3508.7,359.7],[0,10253.2,3508.4,359.7],[1,10320.6,3508.0,89.7],[0,10330.0,3508.0,359.7],[1,10343.1,3507.9,89.7],[1,10383.4,3507.7,89.7],[0,10458.0,3507.3,359.7],[1,10508.0,3507.0,90.0],[0,10523.1,3507.0,360.0],[0,10590.0,3506.9,360.0],[0,10630.4,3506.9,360.0],[2,10695.3,3506.9,360.0],[3,10710.4,3506.8,90.0],[3,10722.5,3506.8,90.0],[1,10732.7,3506.8,90.0],[0,10797.6,3506.8,360.0],[1,10842.0,3506.7,89.6],[1,10853.6,3506.6,89.6],[1,10959.2,3505.9,89.6],[0,11041.2,3505.3,359.6],[1,11143.0,3504.5,89.6],[0,11155.2,3504.4,359.6],[1,11167.1,3504.3,89.6],[4,11242.2,3504.9,0.5],[1,11302.7,3505.5,90.5],[0,11397.2,3506.3,0.5],[1,11445.3,3506.8,90.5],[1,11457.9,3506.9,90.5],[1,11470.7,3507.0,90.5],[0,11481.4,3507.1,0.5],[1,11584.4,3507.8,90.3],[0,11651.2,3508.1,0.3],[0,11754.2,3508.7,0.3],[0,11769.2,3508.8,0.3],[0,11845.7,3509.2,359.5],[0,11934.2,3508.4,359.5],[0,11977.3,3508.0,359.5],[2,12048.2,3507.4,359.5],[0,12110.6,3506.8,359.5],[0,12120.5,3506.7,359.5],[1,12135.6,3506.6,89.5],[0,12232.5,3506.5,0.2],[1,12338.4,3506.9,90.2],[4,12383.2,3507.0,0.2],[0,12428.7,3507.2,0.2]],"x":[[0.2,25.0,89.5,"12/200 BT,AP"],[46.9,24.6,89.5,"9/200 MT"],[112.9,24.0,89.5,"9/200 MT"],[128.9,23.9,89.5,"9/200 MT"],[175.0,23.4,89.5,"12/200 BT"],[243.5,22.8,89.5,"9/200 MT,BT"],[335.5,22.0,89.9,"12/200 BT,AP"],[395.9,22.0,89.9,"9/200 BT"],[434.3,21.9,89.9,"12/AC MT"],[514.4,21.8,89.9,"9/150 BT"],[616.8,21.6,89.9,"12/300 MT,AP"],[714.5,21.1,89.5,"9/200 MT"],[821.1,20.2,89.5,"9/200 BT,AP"],[922.8,19.4,89.5,"9/150 BT,AP"],[1026.2,3.1,270.1,"12/200 MT,AP"],[1103.3,3.3,270.1,"9/150 BT"],[1195.1,3.6,270.1,"12/200 MT"],[1267.3,3.7,270.1,"12/200 BT,AP"],[1357.7,4.1,270.2,"12/200 MT,AP"],[1420.6,4.3,270.2,"12/200 MT"],[1464.3,4.5,270.2,"12/200 MT"],[1566.7,4.9,270.2,"12/300 BT"],[1622.6,5.2,270.2,"7/150 BT"],[1635.7,5.3,270.6,"12/200 MT"],[1678.5,5.7,270.6,"12/200 MT"],[1758.9,6.6,270.6,"9/150 BT"],[1808.7,7.1,270.6,"12/200 BT"],[1908.1,8.1,270.6,"9/200 MT"],[1922.8,8.3,270.6,"12/AC MT"],[2001.6,8.7,270.1,"12/300 MT,AP"],[2087.0,8.8,270.1,"12/200 MT,AP"],[2188.1,9.1,270.1,"12/200 MT,BT"],[2202.2,9.1,270.1,"9/200 BT"],[2273.4,9.2,270.1,"12/200 MT"],[2286.7,9.3,270.4,"12/200 MT"],[2348.7,9.7,270.4,"12/200 MT,AP"],[2438.5,10.4,270.4,"12/300 MT,BT"],[2482.6,10.7,270.4,"9/150 MT,BT"],[2571.1,11.3,270.4,"12/200 MT"],[2670.8,12.1,270.5,"9/200 MT,BT"],[2681.1,12.1,270.5,"9/200 BT"],[2720.2,12.4,270.5,"12/200 MT,AP"],[2787.9,13.0,270.5,"9/200 MT"],[2883.9,13.7,270.5,"12/200 MT"],[2974.2,29.6,89.5,"12/200 BT,AP"],[3025.7,29.2,89.5,"12/200 BT"],[3067.5,28.8,89.5,"7/150 BT"],[3124.8,28.3,89.5,"A COLOCAR 9/200 MT"],[3184.6,27.8,89.5,"A COLOCAR 9/200 MT"],[3194.2,27.7,89.5,"9/150 MT"],[3300.9,11.4,270.2,"12/200 BT,AP"],[3372.5,11.7,270.2,"9/200 MT"],[3457.8,12.1,270.2,"9/200 MT"],[3567.1,12.5,270.2,"9/200 MT"],[3628.6,28.5,90.0,"12/200 BT"],[3643.2,28.5,90.0,"9/200 MT,BT"],[3684.4,28.5,90.0,"12/200 BT,AP"],[3733.9,28.5,90.0,"9/200 BT"],[3743.2,28.5,90.0,"12/AC MT"],[3809.3,28.5,90.0,"9/150 BT"],[3911.0,12.5,270.1,"12/300 MT,AP"],[3981.3,12.6,270.1,"9/200 MT"],[4021.4,12.6,270.1,"9/200 BT,AP"],[4064.6,12.7,270.1,"9/150 BT,AP"],[4131.7,12.7,270.1,"12/200 MT,AP"],[4208.2,12.8,270.1,"9/150 BT"],[4268.7,12.9,270.1,"12/200 MT"],[4310.6,13.0,270.1,"12/200 BT,AP"],[4378.3,13.1,270.1,"12/200 MT,AP"],[4393.5,13.1,270.1,"12/200 MT"],[4461.1,13.2,270.1,"12/200 MT"],[4567.3,13.4,270.2,"12/300 BT"],[4581.7,13.4,270.2,"7/150 BT"],[4591.1,13.4,270.2,"12/200 MT"],[4630.1,13.6,270.2,"12/200 MT"],[4677.2,13.7,270.2,"9/150 BT"],[4689.4,13.8,270.2,"12/200 BT"],[4762.9,14.0,270.2,"9/200 MT"],[4861.8,14.3,270.2,"12/AC MT"],[4929.2,29.9,89.5,"12/300 MT,AP"],[4979.5,29.4,89.5,"12/200 MT,AP"],[5041.4,28.9,89.5,"12/200 MT,BT"],[5090.0,28.4,89.5,"9/200 BT"],[5103.0,28.3,89.5,"12/200 MT"],[5201.2,11.4,270.4,"12/200 MT"],[5294.9,12.0,270.4,"12/200 MT,AP"],[5309.9,12.1,270.4,"12/300 MT,BT"],[5360.5,12.4,270.4,"9/150 MT,BT"],[5434.1,12.9,270.4,"12/200 MT"],[5519.4,13.5,270.4,"9/200 MT,BT"],[5609.7,14.4,270.6,"9/200 BT"],[5647.8,14.8,270.6,"12/200 MT,AP"],[5712.8,15.4,270.6,"9/200 MT"],[5781.6,16.1,270.6,"12/200 MT"],[5824.8,16.6,270.6,"12/200 BT,AP"],[5876.1,32.8,90.0,"12/200 BT"],[5891.7,32.8,90.0,"7/150 BT"],[5943.1,32.8,90.0,"A COLOCAR 9/200 MT"],[5991.4,32.8,90.0,"A COLOCAR 9/200 MT"],[6006.0,32.8,90.0,"9/150 MT"],[6107.6,32.8,90.0,"12/200 BT,AP"],[6153.4,32.8,90.0,"9/200 MT"],[6168.3,32.8,90.0,"9/200 MT"],[6265.8,32.0,89.5,"9/200 MT"],[6305.4,31.6,89.5,"12/200 BT"],[6398.0,30.7,89.5,"9/200 MT,BT"],[6444.0,30.3,89.5,"12/200 BT,AP"],[6456.1,30.1,89.5,"9/200 BT"],[6512.6,29.7,90.0,"12/AC MT"],[6526.1,29.7,90.0,"9/150 BT"],[6525.9,98.4,7.1,"12/300 MT,AP"],[6517.1,169.5,7.1,"9/200 MT"],[6505.4,263.2,7.1,"9/200 BT,AP"],[6497.4,327.3,7.1,"9/150 BT,AP"],[6493.1,383.4,0.5,"12/200 MT,AP"],[6492.7,425.5,0.5,"9/150 BT"],[6491.8,527.2,0.5,"12/200 MT"],[6491.7,539.3,0.5,"12/200 BT,AP"],[6491.6,554.9,0.5,"12/200 MT,AP"],[6491.5,568.4,0.5,"12/200 MT"],[6490.6,669.4,0.5,"12/200 MT"],[6490.2,759.8,0.0,"12/300 BT"],[6490.2,807.4,0.0,"7/150 BT"],[6490.2,907.5,0.0,"12/200 MT"],[6490.2,958.0,0.0,"12/200 MT"],[6490.2,1004.5,0.0,"9/150 BT"],[6490.2,1102.2,360.0,"12/200 BT"],[6490.2,1151.9,360.0,"9/200 MT"],[6490.2,1162.0,360.0,"12/AC MT"],[6490.3,1204.5,360.0,"12/300 MT,AP"],[6490.3,1306.7,360.0,"12/200 MT,AP"],[6490.3,1321.6,360.0,"12/200 MT,BT"],[6490.3,1359.9,360.0,"9/200 BT"],[6490.4,1371.0,360.0,"12/200 MT"],[6490.4,1466.1,359.9,"12/200 MT"],[6490.5,1511.9,359.9,"12/200 MT,AP"],[6490.6,1558.8,359.9,"12/300 MT,BT"],[6490.6,1627.9,359.9,"9/150 MT,BT"],[6490.7,1641.0,359.9,"12/200 MT"],[6490.7,1710.1,359.9,"9/200 MT,BT"],[6491.2,1816.1,359.6,"9/200 BT"],[6491.6,1865.2,359.6,"12/200 MT,AP"],[6492.2,1955.3,359.6,"9/200 MT"],[6493.0,2058.8,359.6,"12/200 MT"],[6493.6,2144.0,359.6,"12/200 BT,AP"],[6493.7,2156.0,359.6,"12/200 BT"],[6493.8,2167.0,359.6,"7/150 BT"],[6493.9,2178.3,359.6,"A COLOCAR 9/200 MT"],[6494.0,2189.3,359.6,"A COLOCAR 9/200 MT"],[6494.8,2291.7,359.6,"9/150 MT"],[6495.4,2375.8,359.6,"12/200 BT,AP"],[6495.6,2391.6,359.6,"9/200 MT"],[6496.2,2474.7,359.5,"9/200 MT"],[6496.3,2488.8,359.5,"9/200 MT"],[6496.4,2500.0,359.5,"12/200 BT"],[6496.9,2551.8,359.5,"9/200 MT,BT"],[6497.0,2566.8,359.5,"12/200 BT,AP"],[6497.6,2638.5,359.5,"9/200 BT"],[6497.9,2684.0,359.5,"12/AC MT"],[6498.1,2698.0,359.5,"9/150 BT"],[6498.9,2797.6,359.5,"12/300 MT,AP"],[6499.3,2875.3,359.7,"9/200 MT"],[6499.6,2932.8,359.7,"9/200 BT,AP"],[6499.9,2978.1,359.7,"9/150 BT,AP"],[6500.3,3066.4,359.7,"12/200 MT,AP"],[6500.4,3077.9,359.7,"9/150 BT"],[6500.8,3144.6,359.7,"12/200 MT"],[6501.0,3184.4,359.6,"12/200 BT,AP"],[6501.3,3231.4,359.6,"12/200 MT,AP"],[6501.6,3271.6,359.6,"12/200 MT"],[6501.7,3281.3,359.6,"12/200 MT"],[6502.3,3369.4,359.6,"12/300 BT"],[6503.0,3458.0,359.6,"7/150 BT"],[6503.3,3525.3,0.0,"12/200 MT"],[6524.0,3567.6,82.9,"12/200 MT"],[6534.9,3566.3,82.9,"9/150 BT"],[6575.0,3561.3,82.9,"12/200 BT"],[6662.0,3550.5,82.9,"9/200 MT"],[6701.3,3545.7,82.9,"12/AC MT"],[6746.7,3540.0,82.9,"12/300 MT,AP"],[6811.3,3532.0,82.9,"12/200 MT,AP"],[6894.4,3528.0,89.6,"12/200 MT,BT"],[6940.0,3527.6,89.6,"9/200 BT"],[6987.9,3527.3,89.6,"12/200 MT"],[7051.2,3526.8,89.6,"12/200 MT"],[7102.8,3526.4,89.6,"12/200 MT,AP"],[7117.1,3526.3,89.6,"12/300 MT,BT"],[7172.2,3525.8,89.6,"9/150 MT,BT"],[7184.6,3525.7,89.5,"12/200 MT"],[7274.3,3525.0,89.5,"9/200 MT,BT"],[7372.8,3524.2,89.5,"9/200 BT"],[7449.4,3523.6,89.5,"12/200 MT,AP"],[7495.7,3523.2,89.5,"9/200 MT"],[7601.2,3522.4,89.6,"12/200 MT"],[7639.4,3522.2,89.6,"12/200 BT,AP"],[7741.2,3521.4,89.6,"12/200 BT"],[7782.1,3521.2,89.6,"7/150 BT"],[7828.9,3520.8,89.6,"A COLOCAR 9/200 MT"],[7938.3,3520.2,89.7,"A COLOCAR 9/200 MT"],[8020.8,3519.7,89.7,"9/150 MT"],[8086.1,3519.3,89.7,"12/200 BT,AP"],[8099.8,3519.2,89.7,"9/200 MT"],[8208.0,3503.1,270.5,"9/200 MT"],[8313.7,3504.1,270.5,"9/200 MT"],[8325.7,3504.2,270.5,"12/200 BT"],[8408.9,3504.9,270.5,"9/200 MT,BT"],[8505.2,3505.8,270.5,"12/200 BT,AP"],[8554.7,3521.7,89.9,"9/200 BT"],[8652.5,3521.6,89.9,"12/AC MT"],[8696.7,3521.6,89.9,"9/150 BT"],[8709.6,3521.6,89.9,"12/300 MT,AP"],[8795.0,3521.5,89.9,"9/200 MT"],[8879.3,3521.3,89.7,"9/200 BT,AP"],[8926.9,3521.0,89.7,"9/150 BT,AP"],[8938.1,3521.0,89.7,"12/200 MT,AP"],[8980.7,3520.8,89.7,"9/150 BT"],[8996.6,3520.7,89.7,"12/200 MT"],[9009.6,3520.6,89.7,"12/200 BT,AP"],[9020.8,3520.6,89.7,"12/200 MT,AP"],[9129.3,3520.1,89.7,"12/200 MT"],[9224.9,3519.4,89.5,"12/200 MT"],[9276.6,3518.9,89.5,"12/300 BT"],[9322.9,3518.5,89.5,"7/150 BT"],[9383.6,3517.9,89.5,"12/200 MT"],[9432.9,3517.4,89.5,"12/200 MT"],[9488.0,3516.9,89.5,"9/150 BT"],[9500.1,3516.8,89.5,"12/200 BT"],[9606.1,3516.4,89.8,"9/200 MT"],[9673.8,3516.1,89.8,"12/AC MT"],[9773.8,3515.8,89.8,"12/300 MT,AP"],[9841.8,3499.5,270.2,"12/200 MT,AP"],[9936.9,3499.9,270.2,"12/200 MT,BT"],[9980.0,3500.1,270.2,"9/200 BT"],[10082.3,3500.5,270.2,"12/200 MT"],[10168.2,3500.8,270.2,"12/200 MT"],[10209.9,3516.7,89.7,"12/200 MT,AP"],[10253.2,3516.4,89.7,"12/300 MT,BT"],[10320.6,3516.0,89.7,"9/150 MT,BT"],[10330.1,3516.0,89.7,"12/200 MT"],[10343.1,3515.9,89.7,"9/200 MT,BT"],[10383.5,3515.7,89.7,"9/200 BT"],[10458.0,3515.3,89.7,"12/200 MT,AP"],[10508.0,3515.0,90.0,"9/200 MT"],[10523.1,3515.0,90.0,"12/200 MT"],[10590.1,3514.9,90.0,"12/200 BT,AP"],[10630.4,3514.9,90.0,"12/200 BT"],[10695.3,3514.9,90.0,"7/150 BT"],[10710.4,3514.8,90.0,"A COLOCAR 9/200 MT"],[10722.5,3514.8,90.0,"A COLOCAR 9/200 MT"],[10732.7,3514.8,90.0,"9/150 MT"],[10797.6,3514.8,90.0,"12/200 BT,AP"],[10842.1,3514.7,89.6,"9/200 MT"],[10853.6,3514.6,89.6,"9/200 MT"],[10959.2,3513.9,89.6,"9/200 MT"],[11041.2,3513.3,89.6,"12/200 BT"],[11143.0,3512.5,89.6,"9/200 MT,BT"],[11155.3,3512.4,89.6,"12/200 BT,AP"],[11167.2,3512.3,89.6,"9/200 BT"],[11242.3,3496.9,270.5,"12/AC MT"],[11302.8,3497.5,270.5,"9/150 BT"],[11397.2,3498.3,270.5,"12/300 MT,AP"],[11445.3,3498.8,270.5,"9/200 MT"],[11458.0,3498.9,270.5,"9/200 BT,AP"],[11470.8,3499.0,270.5,"9/150 BT,AP"],[11481.5,3499.1,270.5,"12/200 MT,AP"],[11584.4,3499.8,270.3,"9/150 BT"],[11651.3,3500.1,270.3,"12/200 MT"],[11754.2,3500.7,270.3,"12/200 BT,AP"],[11769.2,3500.8,270.3,"12/200 MT,AP"],[11845.8,3517.2,89.5,"12/200 MT"],[11934.3,3516.4,89.5,"12/200 MT"],[11977.4,3516.0,89.5,"12/300 BT"],[12048.2,3515.4,89.5,"7/150 BT"],[12110.7,3514.8,89.5,"12/200 MT"],[12120.6,3514.7,89.5,"12/200 MT"],[12135.7,3514.6,89.5,"9/150 BT"],[12232.5,3498.5,270.2,"12/200 BT"],[12338.5,3498.9,270.2,"9/200 MT"],[12383.3,3499.0,270.2,"12/AC MT"],[12428.7,3499.2,270.2,"12/300 MT,AP"]],"c":[[23.2,-13.2],[79.5,-13.7],[120.5,-14.1],[151.6,-14.4],[208.9,-14.9],[289.2,-15.6],[365.7,-16.0],[415.1,-16.1],[474.3,-16.2],[565.6,-16.3],[665.5,-16.6],[767.5,-17.3],[871.6,-18.2],[974.3,-18.7],[1064.8,-18.8],[1149.3,-18.6],[1231.3,-18.3],[1312.6,-18.1],[1389.3,-17.8],[1442.6,-17.6],[1515.6,-17.3],[1594.7,-16.9],[1629.4,-16.8],[1657.3,-16.5],[1718.9,-15.8],[1784.0,-15.2],[1858.6,-14.4],[1915.7,-13.8],[1962.3,-13.5],[2044.4,-13.2],[2137.6,-13.1],[2195.2,-12.9],[2237.8,-12.8],[2280.2,-12.7],[2317.8,-12.5],[2393.7,-11.9],[2460.7,-11.5],[2527.0,-11.0],[2621.1,-10.3],[2676.1,-9.9],[2700.9,-9.7],[2754.2,-9.3],[2836.1,-8.6],[2929.0,-8.3],[2999.6,-8.6],[3046.3,-9.0],[3095.8,-9.4],[3154.3,-9.9],[3189.1,-10.3],[3247.4,-10.4],[3336.8,-10.4],[3415.2,-10.1],[3512.5,-9.7],[3597.8,-9.5],[3635.9,-9.5],[3663.8,-9.5],[3709.1,-9.5],[3738.5,-9.5],[3776.3,-9.5],[3860.1,-9.5],[3946.1,-9.5],[4001.4,-9.4],[4043.0,-9.4],[4098.2,-9.3],[4170.0,-9.2],[4238.5,-9.1],[4289.7,-9.1],[4344.5,-9.0],[4386.0,-8.9],[4427.3,-8.9],[4514.2,-8.7],[4574.5,-8.6],[4586.5,-8.6],[4610.7,-8.5],[4653.8,-8.4],[4683.4,-8.3],[4726.2,-8.1],[4812.4,-7.8],[4895.2,-7.9],[4954.0,-8.3],[5010.1,-8.9],[5065.4,-9.4],[5096.2,-9.6],[5151.8,-10.1],[5248.2,-10.3],[5302.6,-9.9],[5335.4,-9.7],[5397.4,-9.3],[5476.9,-8.8],[5564.8,-8.1],[5628.9,-7.4],[5680.5,-6.9],[5747.4,-6.2],[5803.4,-5.6],[5850.5,-5.3],[5883.9,-5.2],[5917.4,-5.2],[5967.3,-5.2],[5998.7,-5.2],[6056.8,-5.2],[6130.5,-5.2],[6160.9,-5.2],[6216.7,-5.6],[6285.3,-6.2],[6351.4,-6.9],[6420.6,-7.5],[6449.7,-7.8],[6484.1,-8.1],[6519.4,-8.3],[6551.9,62.8],[6543.3,136.7],[6533.1,219.1],[6523.2,298.0],[6517.2,357.1],[6514.9,404.7],[6514.3,476.6],[6513.8,533.4],[6513.7,547.3],[6513.5,561.9],[6513.0,619.1],[6512.4,714.7],[6512.2,783.6],[6512.2,857.4],[6512.2,932.7],[6512.2,981.2],[6512.2,1053.3],[6512.2,1127.1],[6512.2,1156.9],[6512.2,1183.2],[6512.3,1255.6],[6512.3,1314.1],[6512.3,1340.7],[6512.3,1365.4],[6512.4,1418.5],[6512.5,1489.0],[6512.5,1535.3],[6512.6,1593.4],[6512.6,1634.4],[6512.7,1675.5],[6513.0,1763.0],[6513.4,1840.5],[6513.9,1910.1],[6514.6,2006.9],[6515.3,2101.2],[6515.7,2149.8],[6515.8,2161.3],[6515.9,2172.5],[6515.9,2183.6],[6516.4,2240.3],[6517.1,2333.6],[6517.5,2383.5],[6517.9,2433.0],[6518.3,2481.6],[6518.4,2494.2],[6518.6,2525.7],[6518.9,2559.1],[6519.3,2602.4],[6519.8,2661.1],[6520.0,2690.8],[6520.5,2747.6],[6521.1,2836.3],[6521.5,2903.9],[6521.8,2955.3],[6522.1,3022.1],[6522.4,3072.0],[6522.6,3111.1],[6522.9,3164.3],[6523.2,3207.7],[6523.5,3251.4],[6523.7,3276.3],[6524.0,3325.2],[6524.6,3413.6],[6525.1,3491.5],[6532.5,3523.7],[6524.8,3529.2],[6550.3,3526.1],[6613.8,3518.2],[6676.9,3510.4],[6719.3,3505.1],[6774.3,3498.3],[6850.8,3492.1],[6916.9,3489.8],[6963.6,3489.4],[7019.3,3489.0],[7076.7,3488.6],[7109.7,3488.3],[7144.4,3488.1],[7178.1,3487.8],[7229.1,3487.4],[7323.2,3486.6],[7410.8,3485.9],[7472.2,3485.4],[7548.1,3484.8],[7620.0,3484.3],[7690.0,3483.8],[7761.4,3483.3],[7805.3,3483.0],[7883.4,3482.5],[7979.3,3481.9],[8053.2,3481.5],[8092.7,3481.3],[8153.8,3481.2],[8261.0,3481.6],[8319.9,3482.1],[8367.5,3482.6],[8457.2,3483.3],[8529.9,3483.8],[8603.6,3483.7],[8674.5,3483.6],[8703.1,3483.6],[8752.3,3483.5],[8837.0,3483.4],[8902.9,3483.1],[8932.3,3483.0],[8959.2,3482.9],[8988.4,3482.7],[9002.9,3482.7],[9015.0,3482.6],[9074.9,3482.3],[9176.8,3481.7],[9250.4,3481.1],[9299.4,3480.7],[9352.9,3480.2],[9407.9,3479.7],[9460.1,3479.2],[9493.7,3478.9],[9552.9,3478.6],[9639.8,3478.3],[9723.6,3478.0],[9807.7,3477.7],[9889.5,3477.7],[9958.6,3478.0],[10031.3,3478.3],[10125.4,3478.7],[10188.9,3478.8],[10231.3,3478.5],[10286.7,3478.2],[10325.1,3478.0],[10336.4,3478.0],[10363.1,3477.8],[10420.5,3477.5],[10482.8,3477.1],[10515.6,3477.0],[10556.6,3477.0],[10610.2,3476.9],[10662.8,3476.9],[10702.8,3476.8],[10716.4,3476.8],[10727.6,3476.8],[10765.1,3476.8],[10819.8,3476.7],[10847.6,3476.7],[10906.2,3476.2],[11000.0,3475.6],[11091.9,3474.9],[11148.9,3474.5],[11161.0,3474.4],[11204.9,3474.6],[11272.7,3475.2],[11350.2,3475.9],[11421.5,3476.5],[11451.9,3476.8],[11464.6,3476.9],[11476.4,3477.0],[11533.1,3477.4],[11618.0,3478.0],[11702.9,3478.4],[11761.9,3478.8],[11807.6,3479.0],[11889.7,3478.8],[11955.5,3478.2],[12012.5,3477.7],[12079.1,3477.1],[12115.3,3476.8],[12127.8,3476.7],[12184.0,3476.5],[12285.5,3476.7],[12360.9,3476.9],[12406.1,3477.1]]};
+  var demo = document.getElementById('cad');
+  if (demo) fugaDemo(demo, D);
+
+  var btn = document.getElementById('copiar'), out = document.getElementById('numero'), msg = document.getElementById('copiado');
+  if (btn && out) btn.addEventListener('click', function () {
+    var txt = out.textContent.trim();
+    function fallback() {
+      var r = document.createRange(); r.selectNodeContents(out);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      msg.textContent = 'Número seleccionado. Copialo con el teclado.';
+    }
+    try { navigator.clipboard.writeText(txt).then(function () { msg.textContent = 'Número copiado.'; }, fallback); }
+    catch (e) { fallback(); }
+  });
+  var y = document.getElementById('anio'); if (y) y.textContent = new Date().getFullYear();
+})();
+</script>
+</body>
+</html>
