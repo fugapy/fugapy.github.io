@@ -21,7 +21,7 @@
 .cad-computo:not(.on) { opacity: .28; }
 .cad-ctl { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; padding: .7rem .9rem; border-top: 2px solid currentColor; }
 .cad-ctl button { font: inherit; color: inherit; background: transparent; border: 2px solid currentColor; padding: .65rem 1rem; min-height: 2.75rem; cursor: pointer; letter-spacing: .12em; text-transform: inherit; }
-.cad-ctl button:hover:not(:disabled), .cad-ctl button.cad-main { background: #F4F2ED; color: #0A0A0A; border-color: #F4F2ED; }
+.cad-ctl button:hover:not(:disabled), .cad-ctl button.cad-main { background: var(--cad-ui, #F4F2ED); color: var(--cad-ui-on, #0A0A0A); border-color: var(--cad-ui, #F4F2ED); }
 .cad-ctl button.cad-main:hover { background: transparent; color: inherit; border-color: currentColor; }
 .cad-ctl button:disabled { opacity: .35; cursor: default; }
 .cad-ctl button[aria-pressed="false"] { opacity: .5; text-decoration: line-through; }
