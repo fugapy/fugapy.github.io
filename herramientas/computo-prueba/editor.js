@@ -5,7 +5,7 @@
 // El modelo va en metros con y hacia arriba (como el CAD); en el SVG se dibuja con Y = -y.
 (function(root){
   'use strict';
-  var GRILLA = 0.05, PILA = 50, TOL_PX = 8, IMAN_PX = 10;
+  var GRILLA = 0.05, PILA = 50, TOL_PX = 8, IMAN_PX = 10, RASTREO_PX = 10;
   var NUEVA = {puerta:{ancho:0.80, alto:2.10, tipo:'puerta'}, ventana:{ancho:1.20, alto:1.10, tipo:'ventana'}};
   var TIPOS_ABE = [['puerta','Puerta'],['puerta_corrediza','Puerta corrediza'],['paso','Paso (sin hoja)'],
                    ['ventana','Ventana'],['ventana_corrediza','Ventana corrediza'],['ventana_banderola','Ventana banderola']];
@@ -13,7 +13,7 @@
                    ['estar','Estar'],['exterior','Exterior'],['otro','Otro']];
   var PISTAS = {
     seleccionar:'Clic en un muro, abertura o ambiente para editarlo · Supr borra · arrastrá para mover la vista · rueda: zoom',
-    muro:'Clic en el inicio y clic en el final del muro · Shift: ángulo libre · Esc termina',
+    muro:'Clic en el inicio y clic en el final del muro · la línea punteada alinea con otros muros · Shift: ángulo libre · Esc termina',
     puerta:'Clic sobre un muro para poner una puerta de 0,80 × 2,10',
     ventana:'Clic sobre un muro para poner una ventana de 1,20 × 1,10',
     ambiente:'Clic en cada esquina y doble clic para cerrar el ambiente',
@@ -50,6 +50,24 @@
   function sinCierre(p){ p = p || []; var n = p.length; return n > 1 && p[0][0] === p[n-1][0] && p[0][1] === p[n-1][1] ? p.slice(0, n-1) : p; }
   function nuevoId(pref, lista){ var n = lista.length + 1; while (lista.some(function(x){ return x.id === pref + n; })) n++; return pref + n; }
   function familia(t){ return /^ventana/.test(t) ? 'ventana' : 'puerta'; }
+
+  // Rastreo como en el CAD: si x (o y) del punto queda a menos de «tol» de la x (o y) de un extremo de referencia,
+  // se engancha a esa coordenada y se devuelve la guía punteada desde el extremo hasta el punto.
+  // Con base y sin «libre» el muro es ortogonal: solo se rastrea el eje que se mueve. La base no cuenta como referencia.
+  function rastreo(q, base, refs, tol, libre){
+    var p = [q[0], q[1]], guias = [];
+    var ejes = base && !libre ? (q[1] === base[1] ? [0] : q[0] === base[0] ? [1] : []) : [0, 1];
+    ejes.forEach(function(k){
+      var mejor = null, md = tol;
+      (refs || []).forEach(function(r){
+        if (base && r[0] === base[0] && r[1] === base[1]) return;
+        var d = Math.abs(r[k] - q[k]);
+        if (d < md || (mejor && d === md && dist(r, q) < dist(mejor, q))){ md = d; mejor = r; }
+      });
+      if (mejor){ p[k] = mejor[k]; guias.push(mejor); }
+    });
+    return {p:p, guias:guias.map(function(r){ return {de:[r[0], r[1]], a:p}; })};
+  }
 
   function crear(svg, op){
     op = op || {};
@@ -203,6 +221,10 @@
           h.push(poli(pts, 'temp-amb'));
           if (pts.length >= 3) h.push('<text class="cota-t" x="' + r4(pts[0][0] + 8*px) + '" y="' + r4(-pts[0][1] - 8*px) + '" font-size="' + r4(12*px) + '">' + m2(Math.abs(area(pts))) + ' m²</text>');
         }
+        s.guias.forEach(function(g){
+          h.push(linea(g.de, g.a, 'guia'), '<path class="guia-x" d="M' + r4(g.de[0] - 4*px) + ',' + r4(-g.de[1] - 4*px) + 'l' + r4(8*px) + ',' + r4(8*px) +
+            'm0,' + r4(-8*px) + 'l' + r4(-8*px) + ',' + r4(8*px) + '"/>');
+        });
         if (s.iman) h.push('<circle class="iman" cx="' + r4(s.p[0]) + '" cy="' + r4(-s.p[1]) + '" r="' + r4(7*px) + '"/>');
         h.push('<circle class="temp-p" cx="' + r4(s.p[0]) + '" cy="' + r4(-s.p[1]) + '" r="' + r4(2.5*px) + '"/>');
       }
@@ -213,15 +235,19 @@
       capas.temp.innerHTML = h.join('');
     }
 
-    // ---- imán: extremos de muros (10 px), si no grilla de 0,05 y ortogonal respecto de la base ----
+    // ---- imán: extremos de muros (10 px); si no, grilla de 0,05, ortogonal respecto de la base
+    //      y rastreo de alineación con los extremos (guía punteada, como en el CAD) ----
     function iman(p, base, libre){
-      var tol = IMAN_PX / V.s, mejor = null, md = tol;
-      M.muros.forEach(function(w){ [w.de, w.a].forEach(function(q){ var d = dist(p, q); if (d < md){ md = d; mejor = q; } }); });
-      if (temp && temp.pts) temp.pts.forEach(function(q){ var d = dist(p, q); if (d < md){ md = d; mejor = q; } });
-      if (mejor) return {p:[mejor[0], mejor[1]], iman:true};
+      var tol = IMAN_PX / V.s, mejor = null, md = tol, refs = [];
+      M.muros.forEach(function(w){ refs.push(w.de, w.a); });
+      if (temp && temp.pts) refs = refs.concat(temp.pts);
+      if (temp && temp.inicio) refs.push(temp.inicio);
+      refs.forEach(function(q){ var d = dist(p, q); if (d < md){ md = d; mejor = q; } });
+      if (mejor) return {p:[mejor[0], mejor[1]], iman:true, guias:[]};
       var q = [grilla(p[0]), grilla(p[1])];
       if (base && !libre){ if (Math.abs(q[0] - base[0]) >= Math.abs(q[1] - base[1])) q[1] = base[1]; else q[0] = base[0]; }
-      return {p:q, iman:false};
+      var r = rastreo(q, base, refs, RASTREO_PX / V.s, libre);
+      return {p:r.p, iman:false, guias:r.guias};
     }
     // ---- qué hay bajo el puntero: abertura > muro > ambiente (el más chico) ----
     function proyectar(w, p){ var g = geo(w), dx = p[0] - w.de[0], dy = p[1] - w.de[1]; return {g:g, t:dx*g.ux + dy*g.uy, n:dx*g.nx + dy*g.ny}; }
@@ -513,7 +539,7 @@
     };
   }
 
-  var api = {crear:crear};
+  var api = {crear:crear, rastreo:rastreo};
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.FugaEditor = api;
 })(typeof window === 'undefined' ? globalThis : window);
