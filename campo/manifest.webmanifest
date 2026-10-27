@@ -1,0 +1,17 @@
+{
+  "name": "FUGA Campo — relevamiento de obra",
+  "short_name": "FUGA Campo",
+  "description": "Fotos por ambiente, medidas, plano preliminar y charla grabada. Funciona sin señal.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4F1EA",
+  "theme_color": "#F4F1EA",
+  "icons": [
+    { "src": "icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icono.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
