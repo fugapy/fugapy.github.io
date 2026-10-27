@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Cómputo desde plano · FUGA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="computo.css">
+<script defer src="datos.js"></script>
+<script defer src="modelo.js"></script>
+<script defer src="reglas.js"></script>
+<script defer src="acceso.js"></script>
+<script defer src="selector.js"></script>
+<script defer src="editor.js"></script>
+<script defer src="app.js"></script>
+</head>
+<body class="modo-cargando">
+<header class="top">
+  <h1>Cómputo desde plano<small>FUGA · Precios Revista COSTOS #372 · setiembre 2026</small></h1>
+  <p class="cabecera" id="cabecera" hidden></p>
+</header>
+
+<p class="aviso-ejemplo" id="aviso-ejemplo" hidden>Estás viendo un ejemplo. Pedí tu link de prueba
+  <a class="wa" href="https://wa.me/595971857198" target="_blank" rel="noopener">Escribinos por WhatsApp</a></p>
+
+<nav class="barra" id="barra" aria-label="Herramientas de dibujo">
+  <div class="subir">
+    <label class="btn" for="archivo" id="subir" tabindex="0" role="button">Subir plano</label>
+    <input id="archivo" type="file" accept=".dxf,.dwg,.pdf,.png,.jpg,.jpeg" hidden>
+    <small>Tu plano no sale de tu computadora</small>
+  </div>
+  <div class="herr" role="toolbar" aria-label="Herramientas">
+    <button type="button" data-h="seleccionar" aria-pressed="true">Seleccionar</button>
+    <button type="button" data-h="muro" aria-pressed="false">Muro</button>
+    <button type="button" data-h="puerta" aria-pressed="false">Puerta</button>
+    <button type="button" data-h="ventana" aria-pressed="false">Ventana</button>
+    <button type="button" data-h="ambiente" aria-pressed="false">Ambiente</button>
+    <button type="button" data-h="escala" aria-pressed="false">Escala</button>
+    <button type="button" id="deshacer" title="Ctrl+Z">Deshacer</button>
+    <button type="button" id="nuevo" title="Vacía el plano para dibujar desde cero (se puede deshacer)">Plano nuevo</button>
+  </div>
+  <label class="chk"><input type="checkbox" id="exterior"> Muro exterior (0,20)</label>
+  <label class="alt">Altura de muros<input id="altura" type="number" min="2" max="6" step="0.05" value="2.80"></label>
+  <button type="button" class="btn marca-btn" id="confirmar" hidden>Confirmar todo</button>
+</nav>
+<p class="aviso-movil" id="aviso-movil">Para dibujar, abrilo en la computadora</p>
+
+<div class="avisos" id="avisos" hidden>
+  <div id="avisos-texto" aria-live="polite"></div>
+  <label class="unidad" id="unidad" hidden>Unidad detectada: <b id="unidad-txt">m</b>
+    <select id="unidad-sel" aria-label="Unidad del plano"><option value="m">m</option><option value="cm">cm</option><option value="mm">mm</option></select></label>
+  <button type="button" class="x" id="avisos-cerrar" aria-label="Cerrar aviso">×</button>
+</div>
+
+<main class="app">
+  <section class="lienzo" id="lienzo" aria-label="Plano">
+    <svg id="plano" role="img" aria-label="Plano en metros"></svg>
+    <div class="marca" aria-hidden="true" data-texto="DEMO FUGA"></div>
+    <div class="zoom">
+      <button type="button" id="z-mas" aria-label="Acercar">+</button>
+      <button type="button" id="z-menos" aria-label="Alejar">−</button>
+      <button type="button" id="z-todo" aria-label="Ver todo el plano">⤢</button>
+    </div>
+    <p class="pista" id="pista" role="status"></p>
+  </section>
+
+  <div class="panel-wrap">
+  <div class="marca" aria-hidden="true" data-texto="DEMO FUGA"></div>
+  <aside class="panel" id="panel" aria-label="Resultados">
+    <div class="box">
+      <h2>Cantidades del plano</h2>
+      <div class="rows">
+        <div class="row"><span class="l">Superficie construida</span><span class="num" id="r-sup">0 m²</span></div>
+        <div class="row"><span class="l">Muros (sin aberturas)</span><span class="num" id="r-mur">0 m²</span></div>
+        <div class="row"><span class="l">Pintura interior</span><span class="num" id="r-pint">0 m²</span></div>
+        <div class="row"><span class="l">Pintura exterior</span><span class="num" id="r-pext">0 m²</span></div>
+        <div class="row"><span class="l">Aberturas</span><span class="num" id="r-abe">0</span><small id="r-abe-d"></small></div>
+      </div>
+    </div>
+    <div class="box total">
+      <h2>Total estimado · costo directo</h2>
+      <b class="num" id="r-total">Gs. 0</b>
+      <p class="leyenda">Estimación orientativa — precios de referencia setiembre 2026. No es una cotización</p>
+      <p class="note" id="r-nota" hidden></p>
+    </div>
+    <div class="box">
+      <h2>Opciones de obra</h2>
+      <div class="grid" id="opciones">
+        <label>Estructura<select id="p-est"><option value="muros">Muros portantes + encadenados</option><option value="hoa">Pórticos de hormigón armado</option></select></label>
+        <label>Techo<select id="p-tec"><option value="teja">Teja + tejuelón (ybyrapytá)</option><option value="losa">Losa + azotea</option><option value="chapa">Chapa termoacústica</option></select></label>
+        <label>Muros<select id="p-mur"><option value="hueco">Ladrillo hueco</option><option value="comun">Ladrillo común</option></select></label>
+        <label>Piso<select id="p-pis"><option value="cer">Cerámico 45×45</option><option value="por">Porcelanato 60×60</option></select></label>
+        <label>Cielorraso<select id="p-cie"><option value="yeso">Yeso cartón</option><option value="cal">Aplicado a la cal</option></select></label>
+        <label>Aberturas<select id="p-abe"><option value="chapa">Chapa doblada</option><option value="alu">Aluminio + puertas placa</option></select></label>
+        <label>Desagüe<select id="p-des"><option value="red">Red cloacal</option><option value="pozo">Cámara séptica + pozo</option></select></label>
+      </div>
+    </div>
+    <div class="btns">
+      <button type="button" class="btn" id="ver-detalle" disabled>Ver detalle</button>
+      <button type="button" class="btn ghost" id="bajar">Bajar Excel / PDF</button>
+    </div>
+  </aside>
+  </div>
+</main>
+
+<footer class="pie">Lector DWG: LibreDWG (GPL-3.0) · <a href="https://github.com/mlightcad/libredwg-web" target="_blank" rel="noopener">código fuente</a></footer>
+
+<div class="capa" id="detalle" role="dialog" aria-modal="true" aria-labelledby="detalle-t" hidden>
+  <div class="hoja">
+    <div class="marca" aria-hidden="true" data-texto="DEMO FUGA"></div>
+    <header><h2 id="detalle-t">Detalle por rubros</h2><button type="button" class="x" data-cerrar aria-label="Cerrar">×</button></header>
+    <p class="leyenda">Estimación orientativa — precios de referencia setiembre 2026. No es una cotización</p>
+    <div class="cuerpo" id="detalle-cuerpo"></div>
+  </div>
+</div>
+
+<div class="capa" id="selector" role="dialog" aria-modal="true" aria-labelledby="selector-t" hidden>
+  <div class="hoja">
+    <header><h2 id="selector-t">Encontramos estos dibujos en tu archivo. Tocá la planta que querés computar</h2><button type="button" class="x" data-cerrar aria-label="Cerrar">×</button></header>
+    <div class="cuerpo"><div class="dibujos" id="selector-lista"></div></div>
+    <div class="selector-pie">
+      <button type="button" class="btn ghost" id="selector-mano">Ninguna, la dibujo a mano</button>
+      <span class="unidad">Unidad: <b id="selector-unidad-txt">m</b>
+        <button type="button" class="enlace" id="selector-unidad">Cambiar unidad</button>
+        <select id="selector-unidad-sel" aria-label="Unidad del plano" hidden><option value="m">m</option><option value="cm">cm</option><option value="mm">mm</option></select></span>
+    </div>
+  </div>
+</div>
+
+<div class="capa" id="aviso-bajar" role="dialog" aria-modal="true" aria-labelledby="aviso-bajar-t" hidden>
+  <div class="hoja chica">
+    <header><h2 id="aviso-bajar-t">Bajar Excel / PDF</h2><button type="button" class="x" data-cerrar aria-label="Cerrar">×</button></header>
+    <p>Disponible en la versión completa — escribinos</p>
+    <a class="btn" href="https://wa.me/595971857198" target="_blank" rel="noopener">Escribinos por WhatsApp</a>
+  </div>
+</div>
+
+<div class="capa vencida" id="vencida" role="alertdialog" aria-modal="true" aria-labelledby="vencida-t" hidden>
+  <div class="hoja chica">
+    <h2 id="vencida-t">Esta demo venció. Escribinos para la versión completa</h2>
+    <a class="btn" href="https://wa.me/595971857198" target="_blank" rel="noopener">Escribinos por WhatsApp</a>
+  </div>
+</div>
+</body>
+</html>
