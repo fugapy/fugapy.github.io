@@ -95,10 +95,10 @@ async function apiRecalcular(init) {
   return json(vista, 200, { 'X-Computo': pedido.computo });
 }
 
-// Un día de uso (Alex, 17/11/2026): las 24 horas corren desde que se abre la demo por primera vez en ese navegador, como los 7 días
+// Un día de uso (Alex, 17/11/2026), compartido con la demo de planos: las 24 horas corren desde que se abre cualquiera de las dos por primera vez en ese navegador, como los 7 días
 // de los links de computo.fugapy.com, que empiezan con el primer pedido a la API.
 const DURACION = 24 * 3600 * 1000;
-const CLAVE = 'fuga-computo-demo-inicio';
+const CLAVE = 'fuga-demo-inicio'; // la misma que fugapy.com/planos: un solo día para las dos demos
 let inicioEnMemoria = 0;
 function inicioDemo() {
   try {
