@@ -12,8 +12,7 @@ npx esbuild motor.cjs --bundle --minify --format=iife --platform=browser --targe
   --alias:path=./stub.cjs --alias:os=./stub.cjs --alias:child_process=./stub.cjs --alias:worker_threads=./stub.cjs --outfile=../motor.js
 ```
 
-La página es `/c/demo` (`c/demo.html`; `/computo` redirige ahí). Carga la pantalla publicada (app.js y app.css) directo de
-`https://computo.fugapy.com/recursos/`, así siempre es la última; si no responde, usa la copia de respaldo de `computo/recursos/`.
+La página es `/c/demo` (`c/demo.html`; `/computo` redirige ahí), con la pantalla r07 (rama `ultima-version` de fuga-computo) en `computo/recursos/`.
 El token sale de la ruta `/c/demo`. `/recursos/` en la raíz tiene logo, LSP y la vista clásica, que la pantalla pide por ruta absoluta.
 
 La copia de respaldo `computo/recursos/` es la de `servidor/publico` con `/recursos/` → `/computo/recursos/`, el token fijo en `"demo"`

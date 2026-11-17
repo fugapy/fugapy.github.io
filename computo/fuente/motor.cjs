@@ -95,27 +95,15 @@ async function apiRecalcular(init) {
   return json(vista, 200, { 'X-Computo': pedido.computo });
 }
 
-// Un día de uso (Alex, 17/11/2026), compartido con la demo de planos: las 24 horas corren desde que se abre cualquiera de las dos por primera vez en ese navegador, como los 7 días
-// de los links de computo.fugapy.com, que empiezan con el primer pedido a la API.
-const DURACION = 24 * 3600 * 1000;
-const CLAVE = 'fuga-demo-inicio'; // la misma que fugapy.com/planos: un solo día para las dos demos
-let inicioEnMemoria = 0;
-function inicioDemo() {
-  try {
-    let t = Number(localStorage.getItem(CLAVE));
-    if (!t) { t = Date.now(); localStorage.setItem(CLAVE, String(t)); }
-    return t;
-  } catch (e) {
-    return inicioEnMemoria || (inicioEnMemoria = Date.now());
-  }
-}
-const MENSAJE_VENCIDA = 'La demo venció: se puede usar un día desde que la abrís. Escribinos al WhatsApp 0971 857 198 para seguir usando el cómputo.';
+// Demo de un solo día (Alex, 17/11/2026): vence para todos el 18/11/2026 a las 10:15 de Paraguay, igual que fugapy.com/planos.
+const VENCE = Date.parse('2026-11-18T10:15:00-03:00');
+const MENSAJE_VENCIDA = 'La demo venció: estuvo disponible un día, hasta el 18/11 a las 10:15. Escribinos al WhatsApp 0971 857 198 para seguir usando el cómputo.';
 
 const original = window.fetch.bind(window);
 window.fetch = async function (recurso, init = {}) {
   const url = new URL(typeof recurso === 'string' ? recurso : recurso.url, location.href);
   if (url.origin !== location.origin || !url.pathname.startsWith('/api/')) return original(recurso, init);
-  const vence = inicioDemo() + DURACION;
+  const vence = VENCE;
   if (Date.now() > vence) return falla(410, 'vencido', MENSAJE_VENCIDA);
   try {
     switch (url.pathname) {

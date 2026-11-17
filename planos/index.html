@@ -228,8 +228,8 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 </head>
 <body>
 <style>.demo-beta{position:sticky;top:0;z-index:50;background:#f2c200;color:#111;font:600 13px/1.45 Manrope,system-ui,sans-serif;padding:8px 14px;text-align:center}.demo-beta b{font-weight:800}#vencida{display:none}.vencida #main{display:none}.vencida #vencida{display:block}</style>
-<script>(function(){var K="fuga-demo-inicio",D=864e5,t;try{t=+localStorage.getItem(K);if(!t){t=Date.now();localStorage.setItem(K,String(t));}}catch(e){t=Date.now();}if(Date.now()>t+D)document.documentElement.classList.add("vencida");})();</script>
-<div class="demo-beta" role="note"><b>DEMO EN BETA</b> · Se puede usar un día desde que la abrís (el mismo día vale para la demo de cómputo).</div>
+<script>/* demo de un solo día (Alex, 17/11/2026): vence para todos el 18/11/2026 a las 10:15 PY */(function(){if(Date.now()>Date.parse("2026-11-18T10:15:00-03:00"))document.documentElement.classList.add("vencida");})();</script>
+<div class="demo-beta" role="note"><b>DEMO EN BETA</b> · Disponible un solo día: hasta el miércoles 18/11 a las 10:15.</div>
 <a class="skip" href="#main">Saltar al contenido</a>
 
 <header class="top">
@@ -241,7 +241,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     <div class="wrap">
       <p class="lab label">Creador de planos · Demo</p>
       <h2>La demo venció.</h2>
-      <p>Se puede usar un día desde que la abrís. Para verla de nuevo o probarlo con un plano tuyo, escribinos al <a href="https://wa.me/595971857198?text=Hola%2C%20vi%20el%20creador%20de%20planos%20de%20FUGA%20Tech.">WhatsApp 0971 857 198</a> o a <a href="mailto:alex@fugapy.com">alex@fugapy.com</a>.</p>
+      <p>Estuvo disponible un día, hasta el 18/11 a las 10:15. Para verla de nuevo o probarlo con un plano tuyo, escribinos al <a href="https://wa.me/595971857198?text=Hola%2C%20vi%20el%20creador%20de%20planos%20de%20FUGA%20Tech.">WhatsApp 0971 857 198</a> o a <a href="mailto:alex@fugapy.com">alex@fugapy.com</a>.</p>
     </div>
   </section>
 
